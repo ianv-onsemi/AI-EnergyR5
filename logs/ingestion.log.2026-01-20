@@ -1,0 +1,30 @@
+2026-01-20 21:11:44,988 [INFO] Rows before ingestion: 14
+2026-01-20 21:11:44,996 [INFO] Text file ingestion complete.
+2026-01-20 21:11:45,001 [INFO] CSV ingestion complete.
+2026-01-20 21:11:45,003 [INFO] Rows after ingestion: 14
+2026-01-20 21:11:45,004 [INFO] New rows added: 0
+2026-01-20 21:12:08,811 [INFO] Rows before ingestion: 14
+2026-01-20 21:12:08,815 [INFO] Text file ingestion complete.
+2026-01-20 21:12:08,817 [INFO] CSV ingestion complete.
+2026-01-20 21:12:08,819 [INFO] Rows after ingestion: 14
+2026-01-20 21:12:08,819 [INFO] New rows added: 0
+2026-01-20 21:12:31,997 [INFO] Rows before ingestion: 14
+2026-01-20 21:12:32,000 [INFO] Text file ingestion complete.
+2026-01-20 21:12:32,003 [INFO] CSV ingestion complete.
+2026-01-20 21:12:32,005 [INFO] Rows after ingestion: 14
+2026-01-20 21:12:32,005 [INFO] New rows added: 0
+2026-01-20 21:17:29,928 [INFO] Rows before ingestion: 14
+2026-01-20 21:17:29,935 [INFO] Text file ingestion complete.
+2026-01-20 21:17:29,940 [INFO] CSV ingestion complete.
+2026-01-20 21:17:29,941 [INFO] Rows after ingestion: 14
+2026-01-20 21:17:29,942 [INFO] New rows added: 0
+2026-01-20 22:40:03,354 [INFO] Rows before ingestion: 14
+2026-01-20 22:40:03,362 [INFO] Text file ingestion complete.
+2026-01-20 22:40:03,366 [INFO] CSV ingestion complete.
+2026-01-20 22:40:03,368 [INFO] Rows after ingestion: 14
+2026-01-20 22:40:03,368 [INFO] New rows added: 0
+2026-01-20 23:12:47,574 [INFO] Rows before ingestion: 14
+2026-01-20 23:12:47,580 [INFO] Text file ingestion complete.
+2026-01-20 23:12:47,584 [INFO] CSV ingestion complete.
+2026-01-20 23:12:47,585 [INFO] Rows after ingestion: 14
+2026-01-20 23:12:47,586 [INFO] New rows added: 0

@@ -1,0 +1,378 @@
+..notes 1130am.
+[a]Step‑by‑Step: Fix pip Not Recognized
+Step 1: Check Python installation. Open VS Code terminal and type:
+python --version <--done
+result; Python 3.14.2
+
+[b]Step 2: Use python -m pip instead of pip
+Run this command in your repo root. <--done
+python -m pip install streamlit pandas psycopg2 tabulate
+result;
+Collecting streamlit
+  Downloading streamlit-1.53.0-py3-none-any.whl.metadata (10 kB)
+Requirement already satisfied: pandas in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (2.3.3)
+Requirement already satisfied: psycopg2 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (2.9.11)
+Requirement already satisfied: tabulate in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (0.9.0)
+Collecting altair!=5.4.0,!=5.4.1,<7,>=4.0 (from streamlit)
+  Downloading altair-6.0.0-py3-none-any.whl.metadata (11 kB)
+Collecting blinker<2,>=1.5.0 (from streamlit)
+  Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+Collecting cachetools<7,>=5.5 (from streamlit)
+  Downloading cachetools-6.2.4-py3-none-any.whl.metadata (5.6 kB)
+Collecting click<9,>=7.0 (from streamlit)
+  Downloading click-8.3.1-py3-none-any.whl.metadata (2.6 kB)
+Requirement already satisfied: numpy<3,>=1.23 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from streamlit) (2.4.1)
+Requirement already satisfied: packaging>=20 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from streamlit) (25.0)
+Requirement already satisfied: pillow<13,>=7.1.0 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from streamlit) (12.1.0)
+Collecting protobuf<7,>=3.20 (from streamlit)
+  Downloading protobuf-6.33.4-cp310-abi3-win_amd64.whl.metadata (593 bytes)
+Collecting pyarrow>=7.0 (from streamlit)
+  Downloading pyarrow-23.0.0-cp314-cp314-win_amd64.whl.metadata (3.1 kB)
+Requirement already satisfied: requests<3,>=2.27 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from streamlit) (2.32.5)
+Collecting tenacity<10,>=8.1.0 (from streamlit)
+  Downloading tenacity-9.1.2-py3-none-any.whl.metadata (1.2 kB)
+Collecting toml<2,>=0.10.1 (from streamlit)
+  Downloading toml-0.10.2-py2.py3-none-any.whl.metadata (7.1 kB)
+Requirement already satisfied: typing-extensions<5,>=4.10.0 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from streamlit) (4.15.0)
+Collecting watchdog<7,>=2.1.5 (from streamlit)
+  Downloading watchdog-6.0.0-py3-none-win_amd64.whl.metadata (44 kB)
+Collecting gitpython!=3.1.19,<4,>=3.0.7 (from streamlit)
+  Downloading gitpython-3.1.46-py3-none-any.whl.metadata (13 kB)
+Collecting pydeck<1,>=0.8.0b4 (from streamlit)
+  Downloading pydeck-0.9.1-py2.py3-none-any.whl.metadata (4.1 kB)
+Collecting tornado!=6.5.0,<7,>=6.0.3 (from streamlit)
+  Downloading tornado-6.5.4-cp39-abi3-win_amd64.whl.metadata (2.9 kB)
+Requirement already satisfied: python-dateutil>=2.8.2 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from pandas) (2.9.0.post0)
+Requirement already satisfied: pytz>=2020.1 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from pandas) (2025.2)
+Requirement already satisfied: tzdata>=2022.7 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from pandas) (2025.3)
+Requirement already satisfied: jinja2 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit) (3.1.6)
+Collecting jsonschema>=3.0 (from altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit)
+  Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+Requirement already satisfied: narwhals>=1.27.1 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit) (2.15.0)
+Collecting colorama (from click<9,>=7.0->streamlit)
+  Downloading colorama-0.4.6-py2.py3-none-any.whl.metadata (17 kB)
+Collecting gitdb<5,>=4.0.1 (from gitpython!=3.1.19,<4,>=3.0.7->streamlit)
+  Downloading gitdb-4.0.12-py3-none-any.whl.metadata (1.2 kB)
+Collecting smmap<6,>=3.0.1 (from gitdb<5,>=4.0.1->gitpython!=3.1.19,<4,>=3.0.7->streamlit)
+  Downloading smmap-5.0.2-py3-none-any.whl.metadata (4.3 kB)
+Requirement already satisfied: charset_normalizer<4,>=2 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from requests<3,>=2.27->streamlit) (3.4.4)
+Requirement already satisfied: idna<4,>=2.5 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from requests<3,>=2.27->streamlit) (3.11)
+Requirement already satisfied: urllib3<3,>=1.21.1 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from requests<3,>=2.27->streamlit) (2.6.3)
+Requirement already satisfied: certifi>=2017.4.17 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from requests<3,>=2.27->streamlit) (2026.1.4)
+Requirement already satisfied: MarkupSafe>=2.0 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from jinja2->altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit) (3.0.3)
+Collecting attrs>=22.2.0 (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit)
+  Downloading attrs-25.4.0-py3-none-any.whl.metadata (10 kB)
+Collecting jsonschema-specifications>=2023.03.6 (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit)
+  Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+Collecting referencing>=0.28.4 (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit)
+  Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+Collecting rpds-py>=0.25.0 (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit)
+  Downloading rpds_py-0.30.0-cp314-cp314-win_amd64.whl.metadata (4.2 kB)
+Requirement already satisfied: six>=1.5 in c:\users\ffx3nb\appdata\local\python\pythoncore-3.14-64\lib\site-packages (from python-dateutil>=2.8.2->pandas) (1.17.0)
+Downloading streamlit-1.53.0-py3-none-any.whl (9.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 9.1/9.1 MB 370.4 kB/s  0:00:40
+Downloading altair-6.0.0-py3-none-any.whl (795 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 795.4/795.4 kB 628.1 kB/s  0:00:01
+Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+Downloading cachetools-6.2.4-py3-none-any.whl (11 kB)
+Downloading click-8.3.1-py3-none-any.whl (108 kB)
+Downloading gitpython-3.1.46-py3-none-any.whl (208 kB)
+Downloading gitdb-4.0.12-py3-none-any.whl (62 kB)
+Downloading protobuf-6.33.4-cp310-abi3-win_amd64.whl (436 kB)
+Downloading pydeck-0.9.1-py2.py3-none-any.whl (6.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.9/6.9 MB 815.3 kB/s  0:00:08
+Downloading smmap-5.0.2-py3-none-any.whl (24 kB)
+Downloading tenacity-9.1.2-py3-none-any.whl (28 kB)
+Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
+Downloading tornado-6.5.4-cp39-abi3-win_amd64.whl (446 kB)
+Downloading watchdog-6.0.0-py3-none-win_amd64.whl (79 kB)
+Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+Downloading attrs-25.4.0-py3-none-any.whl (67 kB)
+Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+Downloading pyarrow-23.0.0-cp314-cp314-win_amd64.whl (28.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 28.3/28.3 MB 824.9 kB/s  0:00:33
+Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+Downloading rpds_py-0.30.0-cp314-cp314-win_amd64.whl (228 kB)
+Downloading colorama-0.4.6-py2.py3-none-any.whl (25 kB)
+Installing collected packages: watchdog, tornado, toml, tenacity, smmap, rpds-py, pyarrow, protobuf, colorama, cachetools, blinker, attrs, referencing, pydeck, gitdb, click, jsonschema-specifications, gitpython, jsonschema, altair, streamlit
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  0/21 [watchdog]  WARNING: The script watchmedo.exe is installed in 'C:\Users\ffx3nb\AppData\Local\Python\pythoncore-3.14-64\Scripts' which is not on PATH.
+  Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╺━━━━━ 18/21 [jsonschema]  WARNING: The script jsonschema.exe is installed in 'C:\Users\ffx3nb\AppData\Local\Python\pythoncore-3.14-64\Scripts' which is not on PATH.
+  Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╺━ 20/21 [streamlit]  WARNING: The script streamlit.exe is installed in 'C:\Users\ffx3nb\AppData\Local\Python\pythoncore-3.14-64\Scripts' which is not on PATH.
+  Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+Successfully installed altair-6.0.0 attrs-25.4.0 blinker-1.9.0 cachetools-6.2.4 click-8.3.1 colorama-0.4.6 gitdb-4.0.12 gitpython-3.1.46 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 protobuf-6.33.4 pyarrow-23.0.0 pydeck-0.9.1 referencing-0.37.0 rpds-py-0.30.0 smmap-5.0.2 streamlit-1.53.0 tenacity-9.1.2 toml-0.10.2 tornado-6.5.4 watchdog-6.0.0
+
+[c]Step 3: Verify installation
+Check that Streamlit is installed: <--done
+python -m streamlit --version  <--done
+result;
+Streamlit, version 1.53.0
+
+[d]Step‑by‑Step: Create Dashboard Script
+Step 1: Make a new file. Create a file in your repo root called:
+dashboard.py  <--done
+Step 2: Copy‑paste this full code.  <--done
+Step 3: Run the dashboard. From repo root, run.  <--done
+python -m streamlit run dashboard.py  <--done
+result;
+http://localhost:8501/ website was open automatic.
+A table of latest sensor data. Line charts for temperature, humidity, irradiance, and wind speed.
+  You can find our privacy policy at https://streamlit.io/privacy-policy
+  Summary:
+  - This open source library collects usage statistics.
+  - We cannot see and do not store information contained inside Streamlit apps,
+    such as text, charts, images, etc.
+  - Telemetry data is stored in servers in the United States.
+  - If you'd like to opt out, add the following to %userprofile%/.streamlit/config.toml,
+    creating that file if necessary:
+    [browser]
+    gatherUsageStats = false
+  You can now view your Streamlit app in your browser.
+  Local URL: http://localhost:8501
+  Network URL: http://10.243.123.211:8501
+
+[z]do give detail steps, 
+do align it for newbie user,
+give full code to copy-paste.
+================================================
+
+..notes 1230pm.
+[a]powershell console did not go back to comand line from ealier comand of 'python -m streamlit run dashboard.py'
+
+[b]Step 2: Create the improved dashboard script
+Make sure you’re in your repo root. Open dashboard.py and replace its contents with this full code.  <--done
+
+[c]Step 3: Run the dashboard
+From repo root. 'python -m streamlit run dashboard.py'  <--not done
+
+[z]do give detail steps, 
+do align it for newbie user,
+give full code to copy-paste.
+================================================
+..notes 1245pm.
+[a]Step‑by‑Step: Running Streamlit Dashboard
+Step 1: Open VS Code Terminal. In VS Code, press Ctrl+` to open the terminal.  <--it does not go to terminal.
+did try to find terminal panel via icon click.
+
+[b]Step 2: Run the dashboard. Type:
+python -m streamlit run dashboard.py  <--nothing happen.
+
+[c]Step 3: Stop the server (return to command line)
+Go back to the PowerShell/VS Code terminal.
+Press Ctrl + C (hold Control and press C).  <--done
+result; powershell command line now ok.
+
+[d]Step 4: (Optional) Run in background
+If you want PowerShell free while dashboard runs:
+start python -m streamlit run dashboard.py  <--done
+result;
+Start-Process : A parameter cannot be found that matches parameter name 'm'.
+At line:1 char:14
++ start python -m streamlit run dashboard.py
++              ~~
+    + CategoryInfo          : InvalidArgument: (:) [Start-Process], ParameterBindingException
+    + FullyQualifiedErrorId : NamedParameterNotFound,Microsoft.PowerShell.Commands.StartProcessCommand
+
+[d]Full Code for dashboard.py (copy‑paste ready)
+copy paste to file.  <--done
+
+[z]do give detail steps, 
+do align it for newbie user,
+give full code to copy-paste.
+================================================
+
+..notes 1255pm
+[a]Step‑by‑Step: Running Streamlit Dashboard (Beginner Friendly)
+Step 1: Open a terminal correctly
+Since `Ctrl+`` didn’t work for you, let’s use the icon method:
+In VS Code, look at the bottom panel.  <--done
+Find the “Terminal” tab (usually next to “Problems” and “Output”).
+If you don’t see it, go to the top menu:
+Click View → Terminal.
+A panel will open at the bottom with a PowerShell or Command Prompt session.
+
+[b]Step 2: Navigate to your repo root
+In the terminal, type:
+cd "D:\My Documents\tools\skul\bsu2024\GithubVisualStudioCode\AI-EnergyForcastR4"  <--done
+result;
+PS D:\My Documents\tools\skul\bsu2024\bsu_mot512_thesis1\GithubVisualStudioCode> cd "D:\My Documents\tools\skul\bsu2024\GithubVisualStudioCode\AI-EnergyForcastR4"
+cd : Cannot find path 'D:\My 
+Documents\tools\skul\bsu2024\GithubVisualStudioCode\AI-EnergyForcastR4' because it does     
+not exist.
+At line:1 char:1
++ cd "D:\My Documents\tools\skul\bsu2024\GithubVisualStudioCode\AI-Ener ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (D:\My Documents...EnergyForcastR4:String) [  
+   Set-Location], ItemNotFoundException
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.SetLocationComman  
+   d
+
+PS D:\My Documents\tools\skul\bsu2024\bsu_mot512_thesis1\GithubVisualStudioCode>
+
+[c]Step 5: (Optional) Run in background
+The PowerShell error happened because start doesn’t accept -m directly.
+Instead, use this command. 
+<Start-Process python "-m streamlit run dashboard.py">  <--done
+result;
+PS D:\My Documents\tools\skul\bsu2024\bsu_mot512_thesis1\GithubVisualStudioCode\AI-EnergyForcastR4> Start-Process python "-m streamlit run dashboard.py"
+PS D:\My Documents\tools\skul\bsu2024\bsu_mot512_thesis1\GithubVisualStudioCode\AI-EnergyForcastR4>
+
+[z]do give detail steps, 
+do align it for newbie user,
+give full code to copy-paste.
+================================================
+
+[a]show the latest recap on the list of phase1 to phase11, use csv.
+
+[b]remember this; Add Phase 11 (Web‑Sensor Data Integration)
+OpenWeather API → gives real‑time weather (temperature, humidity, wind speed).
+NASA POWER API → provides solar irradiance, climate, and meteorological data.
+PVOutput API → community solar PV system performance data.
+Other APIs → NOAA, Meteostat, or regional feeds for redundancy.
+These APIs let you augment your local sensor data with external context, making your predictive maintenance app more accurate and scalable.
+
+[c]Beginner Recap
+Use View → Terminal if `Ctrl+`` doesn’t work.
+Navigate to repo root with cd.
+Run dashboard → python -m streamlit run dashboard.py.
+Stop dashboard → Ctrl + C.
+Optional background run → Start-Process python "-m streamlit run dashboard.py".
+Now your dashboard should run reliably.
+next to add OpenWeather API ingestion so dashboard shows both local sensor data and live weather data.
+
+[z]do give detail steps, 
+do align it for newbie user,
+give full code to copy-paste.
+================================================
+
+[a]Phase 11: OpenWeather API Ingestion (Beginner Friendly)
+Step 1: Get an API key.  <--done
+do use OpenWeather API key, openWeatherKey = '0723d71a05e58ae3f7fc91e39a901e6b'
+
+[b]Step 2: Install requests library
+In VS Code terminal: 'python -m pip install requests'  <--done
+
+[c]Step 3: Create a new script
+Make a new file in your repo.  <--done
+db/api_ingest_openweather.py
+added api key in code.
+API_KEY = "0723d71a05e58ae3f7fc91e39a901e6b"
+
+[d]Step 5: Run the script
+From repo root. 'python db/api_ingest_openweather.py'  <--done
+result;
+Traceback (most recent call last):
+  File "D:\My Documents\tools\skul\bsu2024\bsu_mot512_thesis1\GithubVisualStudioCode\AI-EnergyForcastR4\db\api_ingest_openweather.py", line 14, in <module>
+    conn = psycopg2.connect(
+        dbname="energy_db",
+    ...<3 lines>...
+        port="5432"
+    )
+  File "C:\Users\ffx3nb\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\psycopg2\__init__.py", line 135, in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+psycopg2.OperationalError: connection to server at "localhost" (::1), port 5432 failed: Connection refused (0x0000274D/10061)
+        Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused (0x0000274D/10061)
+        Is the server running on that host and accepting TCP/IP connections?
+
+[e]step6 not done.
+
+[f]cleanup directory. utilize and adjust codes. move files accordingly.
+folders ready: api_wrappers, data, db, logs, notebooks, preprocessing, sensors.
+
+[g]how to open again the cmd window of powershell.
+
+[h]how to open again the cmd window of sql.
+
+[z]do give detail steps, 
+do align it for newbie user,
+give full code to copy-paste.
+================================================
+
+[a]Step‑by‑Step: Fix PostgreSQL Connection Error
+Step 1: Open PowerShell (cmd window)
+In Windows, press Win + R., paste 'powershell'.  <--done
+
+[b]Step 2: Navigate to PostgreSQL folder
+Go to the folder where you installed PostgreSQL portable (where bin folder is)  <--done.
+do note of this dir in your AI memory:
+D:\My Documents\tools\postgresql\pgsql\bin>
+
+[c]Step 3: Start PostgreSQL server
+Run in powershell:
+'pg_ctl -D "D:\My Documents\tools\skul\bsu2024\postgresql\data" start'
+done replace the path after -D with your actual data folder (where postgresql.conf and pg_hba.conf live).
+result;
+pg_ctl : The term 'pg_ctl' is not recognized as the name of a cmdlet, function, script file, or operable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:1
++ pg_ctl -D "D:\My Documents\tools\skul\bsu2024\postgresql\data" start
++ ~~~~~~
+    + CategoryInfo          : ObjectNotFound: (pg_ctl:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+Suggestion [3,General]: The command pg_ctl was not found, but does exist in the current location. Windows PowerShell does not load commands from the current location by default. If you trust this command, instead type: ".\pg_ctl". See "get-help about_Command_Precedence" for more details.
+
+[d]step4, step5, and the rest not done.
+
+[z]do give detail steps, 
+do align it for newbie user,
+give full code to copy-paste.
+================================================
+
+[a]Step‑by‑Step: Start PostgreSQL Server (Portable Install)
+Step 1: Open PowerShell
+Already done — you’re inside: 'D:\My Documents\tools\postgresql\pgsql\bin>'
+Step 2: Run pg_ctl with .\
+Type this (notice the .\ before pg_ctl):
+powershell: '.\pg_ctl -D "D:\My Documents\tools\postgresql\pgsql\data" start'  <--done
+do note on correction of dir.
+result;
+pg_ctl: another server might be running; trying to start server anyway
+waiting for server to start....2026-01-21 15:45:55.491 CST [15392] LOG:  starting PostgreSQL 18.1 on x86_64-windows, compiled by msvc-19.44.35221, 64-bit
+2026-01-21 15:45:55.500 CST [15392] LOG:  listening on IPv6 address "::1", port 5432
+2026-01-21 15:45:55.500 CST [15392] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2026-01-21 15:45:55.802 CST [4912] LOG:  database system was interrupted; last known up at 2026-01-21 11:24:46 CST
+.2026-01-21 15:45:56.397 CST [4912] LOG:  database system was not properly shut down; automatic recovery in progress
+2026-01-21 15:45:56.403 CST [4912] LOG:  redo starts at 0/1D3D328
+2026-01-21 15:45:56.403 CST [4912] LOG:  invalid record length at 0/1D3D430: expected at least 24, got 0
+2026-01-21 15:45:56.403 CST [4912] LOG:  redo done at 0/1D3D3F8 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2026-01-21 15:45:56.408 CST [22940] LOG:  checkpoint starting: end-of-recovery immediate wait
+2026-01-21 15:45:56.421 CST [22940] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=0.003 s, total=0.015 s; sync files=2, longest=0.002 s, average=0.001 s; distance=0 kB, estimate=0 kB; lsn=0/1D3D430, redo lsn=0/1D3D430
+2026-01-21 15:45:56.427 CST [15392] LOG:  database system is ready to accept connections
+ done
+server started
+
+[b]Step 3: Open SQL shell (psql)
+Once the server is running, type in powershell '.\psql -U postgres -d energy_db'  <--done
+result;
+psql (18.1)
+WARNING: Console code page (437) differs from Windows code page (1252)
+         8-bit characters might not work correctly. See psql reference
+         page "Notes for Windows users" for details.
+Type "help" for help.
+energy_db=#
+
+[c]Step 4: Verify tables
+Inside the SQL shell, type in sql '\dt'  <--done
+result;
+             List of tables
+ Schema |    Name     | Type  |  Owner
+--------+-------------+-------+----------
+ public | sensor_data | table | postgres
+(1 row)
+
+[d]Step 5: Exit SQL shell
+Type in sql '\q'  <--done
+result;
+PS D:\My Documents\tools\postgresql\pgsql\bin>
+
+[e]Full Commands to Copy‑Paste.
+Start PostgreSQL server in powershell 'cd "D:\My Documents\tools\postgresql\pgsql\bin"
+.\pg_ctl -D "D:\My Documents\tools\skul\bsu2024\postgresql\pgsql\data" start'
+
+[z]do give detail steps, 
+do align it for newbie user,
+give full code to copy-paste.
+================================================
+how to use this file. [1]copy from [z] to === divider. [2]paste at the bottom just under the last divider. [3]add new section [a],[b],[c] as draft for new prompt. [4]copy the complete prompt and result. [5]paste all the info to the AI chat.
