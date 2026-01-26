@@ -1,4 +1,4 @@
-# AI-EnergyForcastR4
+# AI-EnergyR5
 AI-Driven Predictive Maintenance for Renewable Energy Assets 
 # AI-Driven Predictive Maintenance for Renewable Energy Assets
 
@@ -19,7 +19,7 @@ This project develops a cross-platform application for predictive maintenance of
 
 ### 1. Clone Repository
 ```bash
-AI-EnergyForcastR4/
+AI-EnergyR5/
 │
 ├── db/                     # Database setup and connectors
 │   ├── db_connector.py     # Python script to handles DB connection
