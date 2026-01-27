@@ -33,7 +33,11 @@ def generate_sensor_data():
 
 # Legacy continuous mode (for backward compatibility)
 if __name__ == "__main__":
-    while True:
+    row_count = 0
+    max_rows = 10
+    while row_count < max_rows:
         generate_sensor_data()
-        # Wait 5 minutes before next reading
-        time.sleep(300)
+        row_count += 1
+        # Wait 100ms before next reading
+        time.sleep(0.1)
+    print(f"Simulation complete: Generated {max_rows} rows")

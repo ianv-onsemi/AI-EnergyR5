@@ -27,16 +27,16 @@ AI-EnergyR5/
 │   ├── test_connection.py  # Python script for quick connection test
 │   └── schema.sql          # SQL table definitions
 │
-├── data/                 
-│   ├── sensor_logs.txt   # plain text log file 
-│   └── sensor_data.csv   # CSV file 
+├── data/
+│   ├── sensor_logs.txt   # plain text log file
+│   └── sensor_data.csv   # CSV file
 │
 ├── .env
 ├── requirements.txt      # List of Python dependencies
 ├── README.md             # Documentation for setup and usage
 ├── logs/
-│   └── ingestion.log         # today’s log)
-│   └── ingestion.log.2026-01-20  #yesterday’s log, auto‑created at midnight
+│   └── ingestion.log         # today's log
+│   └── ingestion.log.2026-01-20  # yesterday's log, auto-created at midnight
 │
 ├── sensors/              # Scripts for sensor data (real or simulated)
 │   └── sensor_ingest.py  # First script: generate or simulate sensor readings
@@ -45,12 +45,72 @@ AI-EnergyR5/
 │   └── openweather.py    # First wrapper: fetch weather data
 │   └── nasa_power.py     # Second wrapper: fetch solar/irradiance data
 │
-│
 ├── preprocessing/        # Data cleaning scripts
 │   └── preprocess.py     # First script: normalize and clean sensor logs
 │
 └── notebooks/            # Jupyter notebooks for demos
     └── data_pipeline_demo.ipynb  # Step-by-step interactive demo
+```
+
+### 2. PostgreSQL Database Management
+
+This project uses PostgreSQL as the database backend. Follow these steps to turn PostgreSQL on and off:
+
+#### Turn PostgreSQL On (Start the Server)
+1. **Open Command Prompt Window**:
+   - Press `Win + R`, type `cmd`, and press Enter
+   - Or search for "Command Prompt" in the Start menu
+
+2. **Navigate to PostgreSQL Bin Directory**:
+   - In the Command Prompt window, type the following command and press Enter:
+     ```
+     cd "D:\My Documents\tools\postgresql\pgsql\bin"
+     ```
+
+3. **Start PostgreSQL Server**:
+   - In the same Command Prompt window, type the following command and press Enter:
+     ```
+     pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" -l logfile start
+     ```
+   - This starts PostgreSQL in the background on port 5432
+   - You should see a message indicating the server is starting
+   - The server will continue running until manually stopped
+
+4. **Verify PostgreSQL is Running** (Optional):
+   - In the same Command Prompt window, type the following command and press Enter:
+     ```
+     pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" status
+     ```
+   - Should show: "pg_ctl: server is running (PID: XXXX)"
+
+#### Turn PostgreSQL Off (Stop the Server)
+1. **Open Command Prompt Window**:
+   - Press `Win + R`, type `cmd`, and press Enter
+   - Or search for "Command Prompt" in the Start menu
+
+2. **Navigate to PostgreSQL Bin Directory**:
+   - In the Command Prompt window, type the following command and press Enter:
+     ```
+     cd "D:\My Documents\tools\postgresql\pgsql\bin"
+     ```
+
+3. **Stop PostgreSQL Server**:
+   - In the same Command Prompt window, type the following command and press Enter:
+     ```
+     pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" stop
+     ```
+   - This performs a clean shutdown of the database server
+   - You should see a message indicating the server is stopping
+
+#### Notes
+- PostgreSQL must be running before you can connect to the database from Python scripts
+- The database connection settings are configured in `db/db_connector.py` with default values:
+  - Host: `localhost`
+  - Port: `5432`
+  - Database: `energy_db`
+  - User: `postgres`
+  - Password: `PdM`
+- To test the database connection, run: `python db/test_connection.py`
 
 #### my notes
 '''bash
@@ -116,7 +176,7 @@ in cmd> <"D:\My Documents\tools\postgresql\pgsql\bin\pg_ctl.exe" -D "D:\My Docum
 [Restarting PostgreSQL, If you want to restart:
 in cmd> <"D:\My Documents\tools\postgresql\pgsql\bin\pg_ctl.exe" -D "D:\My Documents\tools\postgresql\pgsql\data" restart>]
 
-...notes 260119;
+...notes 2026-jan-19;
 Phase,Item,Status
 Phase 1: Environment Setup,Install PostgreSQL portable binaries,Done
 Phase 1: Environment Setup,Initialize database cluster (initdb),Done
@@ -140,7 +200,7 @@ Phase 6: Next Steps,Automate ingestion (batch file or cron job),Pending
 Phase 6: Next Steps,Extend ingestion for CSV/real sensor streams,Pending
 Phase 6: Next Steps,Dashboard/visualization integration,Pending
 
-...notes 260120;
+...notes 2026-jan-20;
 sql password = PdM
 Phase,Item,Status
 Phase 1: Environment Setup,Install PostgreSQL portable binaries,Done
@@ -203,7 +263,7 @@ Step 3: Schedule with Task Scheduler
     Set action → run run_ingest.bat.
     Save → ingestion now runs automatically.
 
-...notes 260121;
+...notes 2026-jan-21;
 Phase,Item,Status
 Phase 1: Environment Setup,Install PostgreSQL portable binaries,Done
 Phase 1: Environment Setup,Initialize database cluster (initdb),Done
@@ -243,11 +303,11 @@ Phase 9: Predictive Analytics,Calculate averages/min/max/moving averages,Pending
 Phase 9: Predictive Analytics,Train ML model for forecasting (scikit-learn),Pending
 Phase 10: Deployment & Scaling,Containerize with Docker,Pending
 Phase 10: Deployment & Scaling,Deploy to cloud (AWS/Azure/GCP),Pending
-Phase 11: Web-Sensor Data Integration,Connect to OpenWeather API for local weather data,Pending
-Phase 11: Web-Sensor Data Integration,Ingest NASA POWER API for solar irradiance and climate data,Pending
+Phase 11: Web-Sensor Data Integration,Connect to OpenWeather API for local weather data,Done
+Phase 11: Web-Sensor Data Integration,Ingest NASA POWER API for solar irradiance and climate data,Done
 Phase 11: Web-Sensor Data Integration,Integrate PVOutput API for solar PV system performance,Pending
 Phase 11: Web-Sensor Data Integration,Optional: Add other APIs (NOAA, Meteostat, etc.),Pending
-Phase 11: Web-Sensor Data Integration,Normalize and store web-sensor data into sensor_data table,Pending
+Phase 11: Web-Sensor Data Integration,Normalize and store web-sensor data into sensor_data table,Done
 Phase 11: Web-Sensor Data Integration,Combine local sensor + web API data for richer analytics,Pending
 ...Recap
     Use View → Terminal if `Ctrl+`` doesn’t work.
@@ -256,55 +316,6 @@ Phase 11: Web-Sensor Data Integration,Combine local sensor + web API data for ri
     Optional background run → Start-Process python "-m streamlit run dashboard.py".
     Now dashboard should run reliably.
     next to add OpenWeather API ingestion so dashboard shows both local sensor data and live weather data.
-...notes 260127.
----via blackboxAI
-## 📋 Recent Updates (January 2026)
-### ✅ Completed Implementations
-- **NASA POWER API Integration**: Implemented `api_wrappers/nasa_power.py` with real API calls and simulated fallback for solar irradiance data
-- **Data Preprocessing Toolkit**: Completed `preprocessing/preprocess.py` with comprehensive data cleaning, normalization, and outlier detection functions
-- **Weather Data Capture**: Added `capture_weather_data.py` for automated 20-row weather data ingestion from OpenWeather API
-- **HTML Table Generation**: Created `generate_html_table.py` for dynamic database data visualization with Bootstrap styling
-- **Database Schema**: Updated `db/schema.sql` with complete PostgreSQL table definitions and TimescaleDB extension support
-- **Manual Trigger for Real-Time Ingestion**: Implemented on-demand data ingestion via HTML button in `solar_wind_display.html` with Flask backend in `ingestion_trigger.py`, integrating simulated sensor data with live OpenWeather and NASA POWER API calls
-### 🔧 Key Features Added
-- **API Wrappers**: OpenWeather (weather data) and NASA POWER (solar irradiance) with robust error handling
-- **Data Processing**: Full preprocessing pipeline including cleaning, normalization, interpolation, and outlier detection
-- **Web Visualization**: Automated HTML table generation from database queries
-- **Batch Automation**: `run_ingest.bat` for scheduled data ingestion
-- **Dashboard Integration**: Streamlit dashboard with table and chart views for sensor data analysis
 
-### 📊 Current Status
-- **Database**: PostgreSQL with TimescaleDB support, sensor_data table active
-- **APIs**: OpenWeather and NASA POWER integrated with fallback simulation
-- **Visualization**: Streamlit dashboard and HTML table generation working
-- **Automation**: Batch file for scheduled ingestion, daily log rotation
-- **Data Quality**: Preprocessing pipeline ready for ML model training
-### 🎯 Next Priorities
-- Phase 8: Enable continuous real-time ingestion pipeline
-- Phase 9: Implement predictive analytics with ML models
-- Phase 10: Containerization with Docker and cloud deployment
-- Security: Move hardcoded credentials to environment variables
-### 📋 Phase 8: Real-Time Ingestion - Completed Implementation
-**Completed Features:**
-- **Manual Trigger Button**: Added on-demand ingestion button to `solar_wind_display.html` for triggering real-time data ingestion without continuous loops.
-- **Flask Backend Endpoint**: Implemented `/trigger_ingestion` endpoint in `ingestion_trigger.py` to handle button clicks and execute ingestion scripts.
-- **Integrated Real-Time API Data**: Combined simulated sensor data with live API calls (OpenWeather for weather data, NASA POWER for solar irradiance) triggered by the button.
-  - **OpenWeather API Integration**: Fetches live weather data (temperature, humidity, wind speed) with 10 data points from past 2 days.
-  - **NASA POWER API Integration**: Fetches live solar irradiance data with 10 data points from past 2 days.
-  - **Data Combination Logic**: Merges simulated sensor data with live API data for comprehensive ingestion.
-- **Error Handling & Retries**: Added robust error handling with exponential backoff and retry mechanisms for API calls.
-- **Database Insertion**: Ensures combined data is properly inserted into the sensor_data table with duplicate handling.
-- **Health Monitoring**: Includes status feedback in the HTML interface after button trigger, displaying ingestion results (success/failure, rows inserted).
-- **Configuration Management**: Integrated with existing config.py for API keys and settings.
-**Dependent Files Updated:**
-- `solar_wind_display.html`: Added manual trigger button and JavaScript for API calls and status display.
-- `ingestion_trigger.py`: New Flask application with `/trigger_ingestion` endpoint handling data generation, API fetching, and database insertion.
-- `db/sensor_stream_sim.py`: Updated to generate sensor data on-demand when triggered.
-- `capture_weather_data.py`: Integrated into on-demand pipeline for weather data fetching.
-- `api_wrappers/nasa_power.py`: Ensured integration for solar irradiance data fetching.
-- `requirements.txt`: Added Flask for web framework support.
-**Testing & Validation:**
-- Manual trigger tested in HTML interface with status feedback.
-- API integrations validated with fallback mechanisms.
-- Database insertions confirmed with row count tracking.
+...notes 2026-jan-27.
 

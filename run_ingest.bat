@@ -1,3 +1,3 @@
 @echo off
-cd /d "D:\My Documents\tools\skul\bsu2024\bsu_mot512_thesis1\GithubVisualStudioCode\AI-EnergyForcastR4"
+cd /d "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5"
 python db\db_ingest.py
