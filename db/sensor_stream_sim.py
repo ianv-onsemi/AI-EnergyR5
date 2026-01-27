@@ -1,11 +1,16 @@
 import time
 from datetime import datetime
 import random
+import os
 
 # File where simulated sensor data will be appended
 log_file = "data/sensor_logs.txt"
 
-while True:
+def generate_sensor_data():
+    """
+    Generate a single row of simulated sensor data and append to log file.
+    Returns the generated data as a tuple.
+    """
     # Generate fake sensor values
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     temperature = round(random.uniform(20, 30), 2)   # Celsius
@@ -16,13 +21,19 @@ while True:
     # Format row
     row = f"{timestamp},{temperature},{humidity},{irradiance},{wind_speed}\n"
 
+    # Ensure data directory exists
+    os.makedirs("data", exist_ok=True)
+
     # Append to log file
     with open(log_file, "a") as f:
         f.write(row)
 
-    print(f"Added row: {row.strip()}")
+    print(f"Generated sensor data: {row.strip()}")
+    return (timestamp, temperature, humidity, irradiance, wind_speed)
 
-    # Wait 60 seconds before next reading
-    #time.sleep(5)  #5sec
-    #time.sleep(60) #1min
-    time.sleep(300) #5min
+# Legacy continuous mode (for backward compatibility)
+if __name__ == "__main__":
+    while True:
+        generate_sensor_data()
+        # Wait 5 minutes before next reading
+        time.sleep(300)

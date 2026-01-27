@@ -133,7 +133,7 @@ Phase 3: Python Integration,Fetch and display rows via Python,Done
 Phase 4: Log Ingestion,Adapt script to read sensor_logs.txt,Done
 Phase 4: Log Ingestion,Insert multiple rows from file,Done
 Phase 4: Log Ingestion,Verify ingestion with query output,Done
-Phase 5: Enhancements,Handle duplicate entries (unique timestamp + ON CONFLICT),Pending
+Phase 5: Enhancements,Handle duplicate entries (unique timestamp + ON CONFLICT),Done
 Phase 5: Enhancements,Format timestamp output (seconds only),Done
 Phase 5: Enhancements,Optional: pretty table output,Pending
 Phase 6: Next Steps,Automate ingestion (batch file or cron job),Pending
@@ -180,11 +180,11 @@ Phase 9: Predictive Analytics,Calculate averages/min/max/moving averages,Pending
 Phase 9: Predictive Analytics,Train ML model for forecasting (scikit-learn),Pending
 Phase 10: Deployment & Scaling,Containerize with Docker,Pending
 Phase 10: Deployment & Scaling,Deploy to cloud (AWS/Azure/GCP),Pending
-Phase 11: Web-Sensor Data Integration,Connect to OpenWeather API for local weather data,Pending
-Phase 11: Web-Sensor Data Integration,Ingest NASA POWER API for solar irradiance and climate data,Pending
+Phase 11: Web-Sensor Data Integration,Connect to OpenWeather API for local weather data,Done
+Phase 11: Web-Sensor Data Integration,Ingest NASA POWER API for solar irradiance and climate data,Done
 Phase 11: Web-Sensor Data Integration,Integrate PVOutput API for solar PV system performance,Pending
 Phase 11: Web-Sensor Data Integration,Optional: Add other APIs (NOAA, Meteostat, etc.),Pending
-Phase 11: Web-Sensor Data Integration,Normalize and store web-sensor data into sensor_data table,Pending
+Phase 11: Web-Sensor Data Integration,Normalize and store web-sensor data into sensor_data table,Done
 Phase 11: Web-Sensor Data Integration,Combine local sensor + web API data for richer analytics,Pending
 ...Phase 6: Automate Ingestion
 Step 2: Windows Batch File (simple automation)
@@ -237,6 +237,7 @@ Phase 7: Visualization & Dashboard,Plot temperature vs timestamp chart,Done
 Phase 7: Visualization & Dashboard,Add multiple charts (humidity, irradiance, wind speed),Done
 Phase 7: Visualization & Dashboard,Build simple dashboard (Streamlit with sidebar),Done
 Phase 8: Real-Time Ingestion,Simulate sensor streams (append rows every 5minute),Done
+Phase 8: Real-Time Ingestion,Implement manual trigger for on-demand ingestion,Done
 Phase 8: Real-Time Ingestion,Enable continuous ingestion pipeline,Pending
 Phase 9: Predictive Analytics,Calculate averages/min/max/moving averages,Pending
 Phase 9: Predictive Analytics,Train ML model for forecasting (scikit-learn),Pending
@@ -255,3 +256,63 @@ Phase 11: Web-Sensor Data Integration,Combine local sensor + web API data for ri
     Optional background run → Start-Process python "-m streamlit run dashboard.py".
     Now dashboard should run reliably.
     next to add OpenWeather API ingestion so dashboard shows both local sensor data and live weather data.
+...notes 260127.
+---via blackboxAI
+
+## 📋 Recent Updates (January 2026)
+
+### ✅ Completed Implementations
+- **NASA POWER API Integration**: Implemented `api_wrappers/nasa_power.py` with real API calls and simulated fallback for solar irradiance data
+- **Data Preprocessing Toolkit**: Completed `preprocessing/preprocess.py` with comprehensive data cleaning, normalization, and outlier detection functions
+- **Weather Data Capture**: Added `capture_weather_data.py` for automated 20-row weather data ingestion from OpenWeather API
+- **HTML Table Generation**: Created `generate_html_table.py` for dynamic database data visualization with Bootstrap styling
+- **Database Schema**: Updated `db/schema.sql` with complete PostgreSQL table definitions and TimescaleDB extension support
+- **Manual Trigger for Real-Time Ingestion**: Implemented on-demand data ingestion via HTML button in `solar_wind_display.html` with Flask backend in `ingestion_trigger.py`, integrating simulated sensor data with live OpenWeather and NASA POWER API calls
+
+### 🔧 Key Features Added
+- **API Wrappers**: OpenWeather (weather data) and NASA POWER (solar irradiance) with robust error handling
+- **Data Processing**: Full preprocessing pipeline including cleaning, normalization, interpolation, and outlier detection
+- **Web Visualization**: Automated HTML table generation from database queries
+- **Batch Automation**: `run_ingest.bat` for scheduled data ingestion
+- **Dashboard Integration**: Streamlit dashboard with table and chart views for sensor data analysis
+
+### 📊 Current Status
+- **Database**: PostgreSQL with TimescaleDB support, sensor_data table active
+- **APIs**: OpenWeather and NASA POWER integrated with fallback simulation
+- **Visualization**: Streamlit dashboard and HTML table generation working
+- **Automation**: Batch file for scheduled ingestion, daily log rotation
+- **Data Quality**: Preprocessing pipeline ready for ML model training
+
+### 🎯 Next Priorities
+- Phase 8: Enable continuous real-time ingestion pipeline
+- Phase 9: Implement predictive analytics with ML models
+- Phase 10: Containerization with Docker and cloud deployment
+- Security: Move hardcoded credentials to environment variables
+
+### 📋 Phase 8: Real-Time Ingestion - Completed Implementation
+
+**Completed Features:**
+- **Manual Trigger Button**: Added on-demand ingestion button to `solar_wind_display.html` for triggering real-time data ingestion without continuous loops.
+- **Flask Backend Endpoint**: Implemented `/trigger_ingestion` endpoint in `ingestion_trigger.py` to handle button clicks and execute ingestion scripts.
+- **Integrated Real-Time API Data**: Combined simulated sensor data with live API calls (OpenWeather for weather data, NASA POWER for solar irradiance) triggered by the button.
+  - **OpenWeather API Integration**: Fetches live weather data (temperature, humidity, wind speed) with 10 data points from past 2 days.
+  - **NASA POWER API Integration**: Fetches live solar irradiance data with 10 data points from past 2 days.
+  - **Data Combination Logic**: Merges simulated sensor data with live API data for comprehensive ingestion.
+- **Error Handling & Retries**: Added robust error handling with exponential backoff and retry mechanisms for API calls.
+- **Database Insertion**: Ensures combined data is properly inserted into the sensor_data table with duplicate handling.
+- **Health Monitoring**: Includes status feedback in the HTML interface after button trigger, displaying ingestion results (success/failure, rows inserted).
+- **Configuration Management**: Integrated with existing config.py for API keys and settings.
+
+**Dependent Files Updated:**
+- `solar_wind_display.html`: Added manual trigger button and JavaScript for API calls and status display.
+- `ingestion_trigger.py`: New Flask application with `/trigger_ingestion` endpoint handling data generation, API fetching, and database insertion.
+- `db/sensor_stream_sim.py`: Updated to generate sensor data on-demand when triggered.
+- `capture_weather_data.py`: Integrated into on-demand pipeline for weather data fetching.
+- `api_wrappers/nasa_power.py`: Ensured integration for solar irradiance data fetching.
+- `requirements.txt`: Added Flask for web framework support.
+
+**Testing & Validation:**
+- Manual trigger tested in HTML interface with status feedback.
+- API integrations validated with fallback mechanisms.
+- Database insertions confirmed with row count tracking.
+
