@@ -258,9 +258,7 @@ Phase 11: Web-Sensor Data Integration,Combine local sensor + web API data for ri
     next to add OpenWeather API ingestion so dashboard shows both local sensor data and live weather data.
 ...notes 260127.
 ---via blackboxAI
-
 ## 📋 Recent Updates (January 2026)
-
 ### ✅ Completed Implementations
 - **NASA POWER API Integration**: Implemented `api_wrappers/nasa_power.py` with real API calls and simulated fallback for solar irradiance data
 - **Data Preprocessing Toolkit**: Completed `preprocessing/preprocess.py` with comprehensive data cleaning, normalization, and outlier detection functions
@@ -268,7 +266,6 @@ Phase 11: Web-Sensor Data Integration,Combine local sensor + web API data for ri
 - **HTML Table Generation**: Created `generate_html_table.py` for dynamic database data visualization with Bootstrap styling
 - **Database Schema**: Updated `db/schema.sql` with complete PostgreSQL table definitions and TimescaleDB extension support
 - **Manual Trigger for Real-Time Ingestion**: Implemented on-demand data ingestion via HTML button in `solar_wind_display.html` with Flask backend in `ingestion_trigger.py`, integrating simulated sensor data with live OpenWeather and NASA POWER API calls
-
 ### 🔧 Key Features Added
 - **API Wrappers**: OpenWeather (weather data) and NASA POWER (solar irradiance) with robust error handling
 - **Data Processing**: Full preprocessing pipeline including cleaning, normalization, interpolation, and outlier detection
@@ -282,15 +279,12 @@ Phase 11: Web-Sensor Data Integration,Combine local sensor + web API data for ri
 - **Visualization**: Streamlit dashboard and HTML table generation working
 - **Automation**: Batch file for scheduled ingestion, daily log rotation
 - **Data Quality**: Preprocessing pipeline ready for ML model training
-
 ### 🎯 Next Priorities
 - Phase 8: Enable continuous real-time ingestion pipeline
 - Phase 9: Implement predictive analytics with ML models
 - Phase 10: Containerization with Docker and cloud deployment
 - Security: Move hardcoded credentials to environment variables
-
 ### 📋 Phase 8: Real-Time Ingestion - Completed Implementation
-
 **Completed Features:**
 - **Manual Trigger Button**: Added on-demand ingestion button to `solar_wind_display.html` for triggering real-time data ingestion without continuous loops.
 - **Flask Backend Endpoint**: Implemented `/trigger_ingestion` endpoint in `ingestion_trigger.py` to handle button clicks and execute ingestion scripts.
@@ -302,7 +296,6 @@ Phase 11: Web-Sensor Data Integration,Combine local sensor + web API data for ri
 - **Database Insertion**: Ensures combined data is properly inserted into the sensor_data table with duplicate handling.
 - **Health Monitoring**: Includes status feedback in the HTML interface after button trigger, displaying ingestion results (success/failure, rows inserted).
 - **Configuration Management**: Integrated with existing config.py for API keys and settings.
-
 **Dependent Files Updated:**
 - `solar_wind_display.html`: Added manual trigger button and JavaScript for API calls and status display.
 - `ingestion_trigger.py`: New Flask application with `/trigger_ingestion` endpoint handling data generation, API fetching, and database insertion.
@@ -310,7 +303,6 @@ Phase 11: Web-Sensor Data Integration,Combine local sensor + web API data for ri
 - `capture_weather_data.py`: Integrated into on-demand pipeline for weather data fetching.
 - `api_wrappers/nasa_power.py`: Ensured integration for solar irradiance data fetching.
 - `requirements.txt`: Added Flask for web framework support.
-
 **Testing & Validation:**
 - Manual trigger tested in HTML interface with status feedback.
 - API integrations validated with fallback mechanisms.
