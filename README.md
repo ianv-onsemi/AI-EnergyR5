@@ -115,3 +115,75 @@ This project uses PostgreSQL as the database backend. Follow these steps to turn
 #### Notes
 
 For detailed development notes and progress logs, refer to `mynotes.txt`.
+
+---
+
+## 📋 Project Phases
+
+The project is organized into phases for systematic development. Below is the latest status of all phases with detailed sub-steps:
+
+### Phase 1: Environment Setup ✅ Done
+- Install PostgreSQL portable binaries
+- Initialize database cluster (initdb)
+- Start PostgreSQL manually (pg_ctl)
+- Connect with psql
+
+### Phase 2: Database Schema ✅ Done
+- Create energy_db database
+- Define sensor_data table schema
+- Verify schema with \d sensor_data
+
+### Phase 3: Python Integration ✅ Done
+- Install psycopg2 driver
+- Create db_ingest.py script
+- Connect Python to PostgreSQL
+- Insert test row via Python
+- Fetch and display rows via Python
+
+### Phase 4: Log Ingestion ✅ Done
+- Adapt script to read sensor_logs.txt
+- Insert multiple rows from file
+- Verify ingestion with query output
+
+### Phase 5: Enhancements ✅ Done
+- Handle duplicate entries (unique timestamp + ON CONFLICT)
+- Format timestamp output (seconds only)
+- Optional: pretty table output
+- Row count before/after ingestion
+- Skip header line in text ingestion
+- Modularize connection into db_connector.py
+- Add test_connection.py script
+- Show top/bottom rows in test script
+
+### Phase 6: Next Steps ✅ Done
+- Automate ingestion (batch file or cron job)
+- Extend ingestion for CSV/real sensor streams
+- Dashboard/visualization integration
+- Add permanent log file output (logs/ingestion.log)
+- Daily log rotation (TimedRotatingFileHandler)
+
+### Phase 7: Visualization & Dashboard ✅ Done
+- Plot temperature vs timestamp chart
+- Add multiple charts (humidity, irradiance, wind speed)
+- Build simple dashboard (Streamlit with sidebar)
+
+### Phase 8: Real-Time Ingestion 🔄 Partial
+- Simulate sensor streams (append rows every minute) ✅ Done
+- Implement manual trigger for on-demand ingestion ✅ Done
+- Enable continuous ingestion pipeline ⏳ Pending
+
+### Phase 9: Predictive Analytics ⏳ Pending
+- Calculate averages/min/max/moving averages
+- Train ML model for forecasting (scikit-learn)
+
+### Phase 10: Deployment & Scaling ⏳ Pending
+- Containerize with Docker
+- Deploy to cloud (AWS/Azure/GCP)
+
+### Phase 11: Web-Sensor Data Integration 🔄 Partial
+- Connect to OpenWeather API for local weather data ✅ Done
+- Ingest NASA POWER API for solar irradiance and climate data ✅ Done
+- Integrate PVOutput API for solar PV system performance ⏳ Pending
+- Optional: Add other APIs (NOAA, Meteostat, etc.) ⏳ Pending
+- Normalize and store web-sensor data into sensor_data table ✅ Done
+- Combine local sensor + web API data for richer analytics ⏳ Pending
