@@ -316,6 +316,7 @@ Phase 11: Web-Sensor Data Integration,Combine local sensor + web API data for ri
     Optional background run → Start-Process python "-m streamlit run dashboard.py".
     Now dashboard should run reliably.
     next to add OpenWeather API ingestion so dashboard shows both local sensor data and live weather data.
+
 ...notes 260127.
 ---via blackboxAI
 ## 📋 Recent Updates (January 2026)
