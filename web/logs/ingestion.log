@@ -1,0 +1,10 @@
+2026-01-28 18:44:05,679 [INFO] Rows before ingestion: 15
+2026-01-28 18:44:05,693 [INFO] Text file ingestion complete.
+2026-01-28 18:44:05,694 [WARNING] data/sensor_data.csv not found.
+2026-01-28 18:44:05,695 [INFO] Rows after ingestion: 17
+2026-01-28 18:44:05,696 [INFO] New rows added: 2
+2026-01-28 19:09:52,696 [INFO] Rows before ingestion: 26
+2026-01-28 19:09:52,708 [INFO] Text file ingestion complete.
+2026-01-28 19:09:52,709 [WARNING] data/sensor_data.csv not found.
+2026-01-28 19:09:52,710 [INFO] Rows after ingestion: 27
+2026-01-28 19:09:52,710 [INFO] New rows added: 1

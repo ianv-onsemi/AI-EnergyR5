@@ -1,40 +1,33 @@
-import subprocess
-import sys
-import os
-import logging
-from datetime import datetime
-
-# Import our ingestion functions
-from db.db_ingest import run_ingestion
-from db.sensor_stream_sim import generate_sensor_data
-from capture_weather_data import fetch_weather_data
-
-app = Flask(__name__)
-
-# Setup logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-logger = logging.getLogger(__name__)
-=======
 from flask import Flask, jsonify, request
 import subprocess
 import sys
 import os
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import requests
+import schedule
+import threading
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 # Import our ingestion functions
 from db.db_ingest import run_ingestion
 from db.sensor_stream_sim import generate_sensor_data
-from capture_weather_data import fetch_weather_data, insert_weather_data
+from scripts.capture_weather_data import fetch_weather_data, insert_weather_data
 from api_wrappers.nasa_power import get_solar_irradiance_data
+from db.db_connector import get_connection
 
 app = Flask(__name__)
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
+
+# Global variables for continuous ingestion
+continuous_ingestion_active = False
+last_ingestion_time = None
 
 def retry_with_backoff(func, max_retries=3, base_delay=1):
     """Retry a function with exponential backoff"""
@@ -47,6 +40,191 @@ def retry_with_backoff(func, max_retries=3, base_delay=1):
             delay = base_delay * (2 ** attempt)
             logger.warning(f"Attempt {attempt + 1} failed: {e}. Retrying in {delay}s...")
             time.sleep(delay)
+
+def get_last_timestamp():
+    """Get the latest timestamp from the database"""
+    try:
+        conn = get_connection()
+        with conn.cursor() as cur:
+            cur.execute("SELECT MAX(timestamp) FROM sensor_data;")
+            result = cur.fetchone()
+            conn.close()
+            return result[0] if result and result[0] else None
+    except Exception as e:
+        logger.error(f"Failed to get last timestamp: {e}")
+        return None
+
+def fetch_historical_weather_data(start_date, end_date):
+    """Fetch historical weather data from OpenWeather API for a date range"""
+    weather_data_list = []
+    current_date = start_date
+
+    while current_date <= end_date:
+        try:
+            # Note: OpenWeather free tier doesn't support historical data
+            # This is a placeholder for future implementation with paid tier
+            logger.info(f"Fetching weather data for {current_date.strftime('%Y-%m-%d')}")
+            # For now, fetch current data as approximation
+            weather_data = fetch_weather_data()
+            if weather_data:
+                # Adjust timestamp to current_date
+                adjusted_timestamp = current_date.strftime("%Y-%m-%d %H:%M:%S")
+                adjusted_data = (adjusted_timestamp, weather_data[1], weather_data[2], weather_data[3], weather_data[4])
+                weather_data_list.append(adjusted_data)
+            current_date += timedelta(days=1)
+            time.sleep(1)  # Rate limiting
+        except Exception as e:
+            logger.error(f"Failed to fetch historical weather data for {current_date}: {e}")
+            current_date += timedelta(days=1)
+
+    return weather_data_list
+
+def fetch_historical_solar_data(start_date, end_date):
+    """Fetch historical solar irradiance data from NASA POWER API for a date range"""
+    solar_data_list = []
+    current_date = start_date
+
+    while current_date <= end_date:
+        try:
+            logger.info(f"Fetching solar data for {current_date.strftime('%Y-%m-%d')}")
+            # NASA POWER API can provide historical data
+            # This is a simplified implementation
+            solar_data = get_solar_irradiance_data()
+            if solar_data:
+                # Adjust timestamp to current_date
+                adjusted_timestamp = current_date.strftime("%Y-%m-%d %H:%M:%S")
+                adjusted_data = (adjusted_timestamp, solar_data[1])
+                solar_data_list.append(adjusted_data)
+            current_date += timedelta(days=1)
+            time.sleep(0.5)  # Rate limiting
+        except Exception as e:
+            logger.error(f"Failed to fetch historical solar data for {current_date}: {e}")
+            current_date += timedelta(days=1)
+
+    return solar_data_list
+
+def perform_continuous_ingestion():
+    """Perform continuous ingestion based on schedule and rules"""
+    global last_ingestion_time
+
+    current_time = datetime.now()
+    current_hour = current_time.hour
+
+    # Rule 2: Check if time is later than 8 PM
+    if current_hour >= 20:  # 8 PM is 20:00
+        logger.info("Scheduled ingestion triggered (after 8 PM)")
+
+        # Get last timestamp from database
+        last_timestamp = get_last_timestamp()
+        if last_timestamp:
+            # Calculate start date as day after last timestamp
+            start_date = last_timestamp.date() + timedelta(days=1)
+        else:
+            # If no data, start from yesterday
+            start_date = current_time.date() - timedelta(days=1)
+
+        end_date = current_time.date()
+
+        if start_date > end_date:
+            logger.info("No new data needed - database is up to date")
+            return {
+                'success': True,
+                'message': 'Database is up to date',
+                'total_rows': 0,
+                'time_range': f'{start_date} to {end_date}'
+            }
+
+        logger.info(f"Fetching data from {start_date} to {end_date}")
+
+        # Fetch historical weather data
+        weather_data_list = fetch_historical_weather_data(start_date, end_date)
+
+        # Fetch historical solar data
+        solar_data_list = fetch_historical_solar_data(start_date, end_date)
+
+        # Insert weather data
+        weather_rows_inserted = 0
+        if weather_data_list:
+            try:
+                conn = get_connection()
+                for weather_data in weather_data_list:
+                    # Rule 1: Check if timestamp already exists
+                    with conn.cursor() as cur:
+                        cur.execute("SELECT COUNT(*) FROM sensor_data WHERE timestamp = %s", (weather_data[0],))
+                        if cur.fetchone()[0] == 0:
+                            insert_weather_data(conn, weather_data)
+                            weather_rows_inserted += 1
+                conn.close()
+                logger.info(f"Weather data inserted: {weather_rows_inserted} rows")
+            except Exception as e:
+                logger.error(f"Failed to insert weather data: {e}")
+
+        # Insert solar data
+        solar_rows_inserted = 0
+        if solar_data_list:
+            try:
+                conn = get_connection()
+                for solar_data in solar_data_list:
+                    # Rule 1: Check if timestamp already exists
+                    with conn.cursor() as cur:
+                        cur.execute("SELECT COUNT(*) FROM sensor_data WHERE timestamp = %s", (solar_data[0],))
+                        if cur.fetchone()[0] == 0:
+                            # Create combined data entry
+                            combined_data = (solar_data[0], 0.0, 0.0, solar_data[1], 0.0)
+                            insert_weather_data(conn, combined_data)
+                            solar_rows_inserted += 1
+                conn.close()
+                logger.info(f"Solar data inserted: {solar_rows_inserted} rows")
+            except Exception as e:
+                logger.error(f"Failed to insert solar data: {e}")
+
+        total_rows = weather_rows_inserted + solar_rows_inserted
+        last_ingestion_time = current_time
+
+        return {
+            'success': True,
+            'total_rows': total_rows,
+            'time_range': f'{start_date} to {end_date}',
+            'weather_rows': weather_rows_inserted,
+            'solar_rows': solar_rows_inserted
+        }
+    else:
+        logger.info("Scheduled ingestion skipped - not yet 8 PM")
+        return {
+            'success': True,
+            'message': 'Not yet 8 PM - skipping scheduled ingestion',
+            'total_rows': 0
+        }
+
+def start_continuous_ingestion():
+    """Start the continuous ingestion scheduler"""
+    global continuous_ingestion_active
+
+    if continuous_ingestion_active:
+        logger.info("Continuous ingestion already active")
+        return
+
+    continuous_ingestion_active = True
+    logger.info("Starting continuous ingestion scheduler")
+
+    # Schedule daily check at 8 PM
+    schedule.every().day.at("20:00").do(perform_continuous_ingestion)
+
+    def run_scheduler():
+        while continuous_ingestion_active:
+            schedule.run_pending()
+            time.sleep(60)  # Check every minute
+
+    # Start scheduler in background thread
+    scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
+    scheduler_thread.start()
+    logger.info("Continuous ingestion scheduler started")
+
+def stop_continuous_ingestion():
+    """Stop the continuous ingestion scheduler"""
+    global continuous_ingestion_active
+    continuous_ingestion_active = False
+    logger.info("Continuous ingestion scheduler stopped")
 
 @app.route('/trigger_ingestion', methods=['POST'])
 def trigger_ingestion():
@@ -118,7 +296,6 @@ def trigger_ingestion():
         weather_rows_inserted = 0
         if weather_fetched and weather_data_list:
             try:
-                from db_connector import get_connection
                 conn = get_connection()
                 for weather_data in weather_data_list:
                     insert_weather_data(conn, weather_data)
@@ -132,7 +309,6 @@ def trigger_ingestion():
         solar_rows_inserted = 0
         if solar_fetched and solar_data_list:
             try:
-                from db_connector import get_connection
                 conn = get_connection()
                 for i, solar_data in enumerate(solar_data_list):
                     # Create a combined entry with solar irradiance

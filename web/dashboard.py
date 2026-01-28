@@ -1,22 +1,16 @@
 import streamlit as st
-import psycopg2
 import pandas as pd
+from sqlalchemy import create_engine
 
 # ----------------------------
-# Connect to PostgreSQL
+# Connect to PostgreSQL using SQLAlchemy
 # ----------------------------
-conn = psycopg2.connect(
-    dbname="energy_db",
-    user="postgres",
-    password="PdM",   # <-- replace with your DB password
-    host="localhost",
-    port="5432"
-)
+engine = create_engine("postgresql://postgres:PdM@localhost:5432/energy_db")
 
 # ----------------------------
 # Load data into Pandas
 # ----------------------------
-df = pd.read_sql("SELECT * FROM sensor_data ORDER BY timestamp DESC LIMIT 500;", conn)
+df = pd.read_sql("SELECT * FROM sensor_data ORDER BY timestamp DESC LIMIT 500;", engine)
 
 # ----------------------------
 # Streamlit Dashboard
@@ -55,5 +49,3 @@ elif page == "Summary View":
 
     st.write("Maximum values:")
     st.write(df[["temperature", "humidity", "irradiance", "wind_speed"]].max())
-
-conn.close()

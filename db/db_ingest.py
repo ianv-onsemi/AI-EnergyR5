@@ -4,7 +4,7 @@ import csv
 from datetime import datetime
 from tabulate import tabulate
 from logging.handlers import TimedRotatingFileHandler
-from db_connector import get_connection   # Import connection function
+from db.db_connector import get_connection   # Import connection function
 
 # ----------------------------
 # Logging Setup (console + daily rotating file)
@@ -114,6 +114,37 @@ def fetch_and_display(conn, limit=10):
             print(tabulate(rows, headers=headers, tablefmt="psql"))
     except Exception as e:
         logger.error(f"Error fetching rows: {e}")
+
+def run_ingestion():
+    """Run the complete ingestion process and return results."""
+    conn = get_connection()
+
+    # Count rows before ingestion
+    before_count = count_rows(conn)
+    logger.info(f"Rows before ingestion: {before_count}")
+
+    # Run ingestion
+    ingest_text_file(conn, "data/sensor_logs.txt")
+    ingest_csv_file(conn, "data/sensor_data.csv")
+
+    # Count rows after ingestion
+    after_count = count_rows(conn)
+    logger.info(f"Rows after ingestion: {after_count}")
+
+    # Show how many new rows were added
+    new_rows = 0
+    if before_count is not None and after_count is not None:
+        new_rows = after_count - before_count
+        logger.info(f"New rows added: {new_rows}")
+
+    conn.close()
+
+    return {
+        'success': True,
+        'rows_before': before_count,
+        'rows_after': after_count,
+        'new_rows': new_rows
+    }
 
 # ----------------------------
 # Main Script

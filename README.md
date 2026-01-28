@@ -141,6 +141,243 @@ For detailed development notes and progress logs, refer to `mynotes.txt`.
 
 ---
 
+## 📖 User Guide
+
+### PostgreSQL Database Management
+
+This project uses PostgreSQL as the database backend. Follow these steps to turn PostgreSQL on and off:
+
+#### Turn PostgreSQL On (Start the Server)
+1. **Open Command Prompt Window**:
+   - Press `Win + R`, type `cmd`, and press Enter
+   - Or search for "Command Prompt" in the Start menu
+
+2. **Navigate to PostgreSQL Bin Directory**:
+   - In the Command Prompt window, type the following command and press Enter:
+     ```
+     cd "D:\My Documents\tools\postgresql\pgsql\bin"
+     ```
+
+3. **Start PostgreSQL Server**:
+   - In the same Command Prompt window, type the following command and press Enter:
+     ```bash
+     pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" -l logfile start
+     ```
+   - This starts PostgreSQL in the background on port 5432
+   - You should see a message indicating the server is starting
+   - The server will continue running until manually stopped
+
+4. **Verify PostgreSQL is Running** (Optional):
+   - In the same Command Prompt window, type the following command and press Enter:
+     ```bash
+     pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" status
+     ```
+   - Should show: "pg_ctl: server is running (PID: XXXX)"
+
+#### Turn PostgreSQL Off (Stop the Server)
+1. **Open Command Prompt Window**:
+   - Press `Win + R`, type `cmd`, and press Enter
+   - Or search for "Command Prompt" in the Start menu
+
+2. **Navigate to PostgreSQL Bin Directory**:
+   - In the Command Prompt window, type the following command and press Enter:
+     ```bash
+     cd "D:\My Documents\tools\postgresql\pgsql\bin"
+     ```
+
+3. **Stop PostgreSQL Server**:
+   - In the same Command Prompt window, type the following command and press Enter:
+     ```bash
+     pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" stop
+     ```
+   - This performs a clean shutdown of the database server
+   - You should see a message indicating the server is stopping
+
+#### Notes
+- PostgreSQL must be running before you can connect to the database from Python scripts
+- The database connection settings are configured in `db/db_connector.py` with default values:
+  - Host: `localhost`
+  - Port: `5432`
+  - Database: `energy_db`
+  - User: `postgres`
+  - Password: `PdM`
+- To test the database connection, run: `python db/test_connection.py`
+
+### Complete Step-by-Step Guide: Test Phase 8 Real-Time Data Collection and View Results in Web Interface
+
+#### Overview
+This guide walks you through testing Phase 8's real-time data collection features and viewing the results in the web interface. Phase 8 includes two data collection methods: manual trigger and scheduled ingestion. By the end of this guide, you'll see your collected data displayed in interactive charts and tables.
+
+#### Prerequisites (What You Need First)
+Before starting, make sure you have:
+- PostgreSQL database running (see PostgreSQL Database Management section above)
+- Python environment with all packages installed (`pip install -r requirements.txt`)
+- Internet connection (needed for weather and solar data APIs)
+- Your project folder open in VS Code or terminal
+
+#### Step 1: Prepare Your Environment
+
+1. **Check if PostgreSQL is running**:
+   - Open Command Prompt: Press `Win + R`, type `cmd`, press Enter
+   - Navigate to PostgreSQL: `cd "D:\My Documents\tools\postgresql\pgsql\bin"`
+   - Check status: `pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" status`
+   - If not running, start it: `pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" -l logfile start`
+
+2. **Verify database connection**:
+   - In your project folder, run: `python db/test_connection.py`
+   - You should see existing sensor data in a table format
+
+#### Step 2: Test Manual Data Collection
+
+Manual collection lets you trigger data ingestion instantly via a web API call.
+
+1. **Open your first Command Prompt window** and navigate to the web folder:
+   ```bash
+   cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5\web"
+   ```
+
+2. **Start the web server**:
+   ```bash
+   python ingestion_trigger.py
+   ```
+   - You should see: "Running on http://0.0.0.0:5000"
+   - Keep this window open - the server is now running
+
+3. **Open a second Command Prompt window** (don't close the first one):
+   - Navigate to the same web folder: `cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5\web"`
+
+4. **Trigger data collection manually**:
+   ```bash
+   curl -X POST http://localhost:5000/trigger_ingestion
+   ```
+   - This sends a request to collect new sensor data
+   - The response will show how many data points were collected
+
+5. **Check the server window** (first Command Prompt):
+   - You should see messages like:
+     - "Collecting weather data from OpenWeather API..."
+     - "Collecting solar data from NASA POWER API..."
+     - "Data collection completed. Rows added: 20"
+
+6. **Verify data was saved to database**:
+   ```bash
+   python ..\db\test_connection.py
+   ```
+   - You should see new rows added to your sensor data table
+   - Look for recent timestamps in the data
+
+#### Step 3: Test Automatic Data Collection (Optional)
+
+Automatic collection runs daily after 8 PM, but you can test the function directly.
+
+1. **In a Python session or new Command Prompt**, run:
+   ```bash
+   python -c "from web.ingestion_trigger import perform_continuous_ingestion; result = perform_continuous_ingestion(); print('Result:', result)"
+   ```
+
+2. **What you'll see**:
+   - **Before 8 PM**: `{'success': True, 'message': 'Not yet 8 PM - skipping scheduled ingestion', 'total_rows': 0}`
+   - **After 8 PM**: The system will collect historical data and show rows added
+
+#### Step 4: View Your Data in the Web Interface
+
+Now that you've collected data, let's see it in the web dashboard!
+
+1. **Open a new Command Prompt window** and navigate to the web folder:
+   ```bash
+   cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5\web"
+   ```
+
+2. **Start the Streamlit dashboard**:
+   ```bash
+   python dashboard.py
+   ```
+   - This opens your default web browser automatically
+   - The dashboard will load and show your sensor data
+
+3. **Explore the dashboard**:
+   - **Table View**: See all your sensor data in a neat table format
+     - Columns: timestamp, temperature, humidity, irradiance, wind_speed
+     - Data is sorted by timestamp (newest first)
+   - **Charts View**: Interactive charts showing trends over time
+     - Temperature chart (line graph over time)
+     - Humidity chart
+     - Irradiance (solar power) chart
+     - Wind speed chart
+     - Hover over points to see exact values
+   - **Summary View**: Statistics and insights
+     - Average values for each sensor type
+     - Min/max values
+     - Recent data trends
+
+4. **Alternative: View HTML Table**:
+   ```bash
+   python generate_html_table.py
+   ```
+   - This creates an HTML file you can open in any browser
+   - Shows the same data in a formatted table
+
+#### Step 5: Check Logs and Verify Everything Worked
+
+1. **View the ingestion logs**:
+   - Open `logs/ingestion.log` in your project folder
+   - Look for recent entries showing:
+     - When data collection started
+     - How many rows were added
+     - Any error messages (if something went wrong)
+
+2. **Final database check**:
+   ```bash
+   python db/test_connection.py
+   ```
+   - Confirm all your new data is there
+   - Count should be higher than before you started
+
+#### What You Should See in the Web Interface
+
+After following these steps, your web dashboard should show:
+- **Recent sensor readings** with timestamps from when you triggered collection
+- **Interactive charts** plotting temperature, humidity, irradiance, and wind speed over time
+- **Real data** from OpenWeather API (weather) and NASA POWER API (solar irradiance)
+- **Clean, organized display** that's easy to read and understand
+
+#### Troubleshooting
+
+If something doesn't work:
+
+- **"Command not found"**: Make sure you're in the correct folder
+- **"Connection failed"**: Check if PostgreSQL is running (Step 1)
+- **"Import error"**: Run `pip install -r requirements.txt`
+- **No data collected**: Check your internet connection and API keys in `config.py`
+- **Dashboard won't open**: Make sure no other programs are using port 8501
+
+#### Quick Reference Commands
+
+```bash
+# Check PostgreSQL status
+pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" status
+
+# Start web server for data collection
+cd web
+python ingestion_trigger.py
+
+# Trigger manual data collection
+curl -X POST http://localhost:5000/trigger_ingestion
+
+# Start web dashboard to view data
+streamlit run dashboard.py
+
+# Check database contents
+python db/test_connection.py
+
+# Test automatic collection
+python -c "from web.ingestion_trigger import perform_continuous_ingestion; print(perform_continuous_ingestion())"
+```
+
+This complete guide takes you from setting up the environment to collecting data and viewing beautiful charts in your web browser. The Phase 8 system automatically combines simulated sensor data with real weather and solar data, giving you a comprehensive view of your renewable energy system's performance!
+
+---
+
 ## 📋 Project Phases
 
 The project is organized into phases for systematic development. Below is the latest status of all phases with detailed sub-steps:
