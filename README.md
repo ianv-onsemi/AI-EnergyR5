@@ -21,35 +21,58 @@ This project develops a cross-platform application for predictive maintenance of
 ```bash
 AI-EnergyR5/
 │
-├── db/                     # Database setup and connectors
-│   ├── db_connector.py     # Python script to handles DB connection
-│   ├── db_ingest.py        # Python script to ingestion script (imports connector)
-│   ├── test_connection.py  # Python script for quick connection test
-│   └── schema.sql          # SQL table definitions
-│
-├── data/
-│   ├── sensor_logs.txt   # plain text log file
-│   └── sensor_data.csv   # CSV file
-│
-├── .env
-├── requirements.txt      # List of Python dependencies
 ├── README.md             # Documentation for setup and usage
-├── logs/
-│   └── ingestion.log         # today's log
-│   └── ingestion.log.2026-01-20  # yesterday's log, auto-created at midnight
+├── config.py             # Configuration settings (API keys, database credentials)
+├── requirements.txt      # List of Python dependencies
 │
-├── sensors/              # Scripts for sensor data (real or simulated)
-│   └── sensor_ingest.py  # First script: generate or simulate sensor readings
+├── api_wrappers/         # External API integration modules
+│   ├── openweather.py    # OpenWeather API wrapper for weather data
+│   └── nasa_power.py     # NASA POWER API wrapper for solar irradiance data
 │
-├── api_wrappers/         # External API modules
-│   └── openweather.py    # First wrapper: fetch weather data
-│   └── nasa_power.py     # Second wrapper: fetch solar/irradiance data
+├── data/                 # Data files and logs
+│   ├── sensor_logs.txt   # Plain text sensor log file
+│   └── sensor_data.csv   # CSV file for sensor data
 │
-├── preprocessing/        # Data cleaning scripts
-│   └── preprocess.py     # First script: normalize and clean sensor logs
+├── db/                   # Database setup and connectors
+│   ├── db_connector.py   # Python script for DB connection
+│   ├── db_ingest.py      # Data ingestion script
+│   ├── test_connection.py # Quick connection test script
+│   ├── schema.sql        # SQL table definitions
+│   ├── sensor_stream_sim.py # Sensor stream simulation
+│   └── api_ingest_openweather.py # OpenWeather API ingestion
 │
-└── notebooks/            # Jupyter notebooks for demos
-    └── data_pipeline_demo.ipynb  # Step-by-step interactive demo
+├── docs/                 # Documentation and notes
+│   ├── myNotes.txt       # Development notes and progress logs
+│   └── TODO.md           # Task list and project roadmap
+│
+├── logs/                 # Log files
+│   ├── ingestion.log     # Today's ingestion log
+│   ├── ingestion.log.2026-01-20 # Yesterday's log (auto-rotated)
+│   └── ingestion.log.2026-01-26 # Older log (auto-rotated)
+│
+├── notebooks/            # Jupyter notebooks for demos
+│   └── data_pipeline_demo.py # Step-by-step interactive demo
+│
+├── preprocessing/        # Data cleaning and preprocessing scripts
+│   └── preprocess.py     # Normalize and clean sensor logs
+│
+├── scripts/              # Utility scripts
+│   ├── capture_weather_data.py # Automated weather data capture
+│   ├── show_recent_data.py     # Display recent sensor data
+│   └── run_ingest.bat          # Batch file for scheduled ingestion
+│
+├── sensors/              # Sensor data scripts
+│   └── sensor_ingest.py  # Generate or simulate sensor readings
+│
+├── tests/                # Testing and validation scripts
+│   ├── check_schema.py   # Schema validation
+│   └── test_imports.py   # Import testing
+│
+└── web/                  # Web-related files
+    ├── dashboard.py      # Streamlit dashboard
+    ├── generate_html_table.py # HTML table generation
+    ├── ingestion_trigger.py   # Flask endpoint for ingestion
+    └── solar_wind_display.html # HTML interface for data display
 ```
 
 ### 2. PostgreSQL Database Management
