@@ -14,4 +14,4 @@
   - Update styling and structure for buttons and results.
 - [x] Followup: Test new endpoints and buttons.
 - [x] Ensure Windows compatibility for commands.
-- [ ] Update README if needed.
+- [x] Update README if needed.

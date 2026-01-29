@@ -297,6 +297,106 @@ def final_db_check():
     """Final database check (same as verify_db_connection)"""
     return verify_db_connection()
 
+@app.route('/get_weather_data_from_db', methods=['GET'])
+def get_weather_data_from_db():
+    """Get recent weather data from database and return as JSON"""
+    try:
+        conn = get_connection()
+        with conn.cursor() as cur:
+            # Get the 10 most recent entries with weather data (temperature, humidity, wind_speed)
+            cur.execute("""
+                SELECT timestamp, temperature, humidity, wind_speed, source
+                FROM sensor_data
+                WHERE temperature IS NOT NULL AND temperature != 0.0
+                ORDER BY timestamp DESC
+                LIMIT 10
+            """)
+            rows = cur.fetchall()
+        conn.close()
+
+        # Format data for JSON response
+        weather_data = []
+        for row in rows:
+            weather_data.append({
+                'timestamp': row[0].strftime('%Y-%m-%d %H:%M:%S') if row[0] else '',
+                'temperature': float(row[1]) if row[1] else 0.0,
+                'humidity': float(row[2]) if row[2] else 0.0,
+                'wind_speed': float(row[3]) if row[3] else 0.0,
+                'source': row[4] if row[4] else 'Database'
+            })
+
+        return jsonify({
+            'success': True,
+            'data': weather_data,
+            'count': len(weather_data)
+        })
+
+    except Exception as e:
+        logger.error(f"Failed to get weather data from database: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/fetch_openweather', methods=['POST'])
+def fetch_openweather():
+    """Fetch data from OpenWeather API"""
+    try:
+        logger.info("Fetching data from OpenWeather API")
+
+        # Fetch weather data from OpenWeather API (10 rows from past 2 days)
+        weather_fetched = False
+        weather_data_list = []
+        try:
+            # Fetch 10 weather data points from past 2 days
+            for i in range(10):
+                weather_data = fetch_weather_data()
+                if weather_data:
+                    weather_data_list.append(weather_data)
+                    weather_fetched = True
+                    logger.info(f"Weather data {i+1} fetched successfully")
+                    time.sleep(1)  # Rate limiting
+                else:
+                    logger.warning(f"Weather data {i+1} fetch returned None")
+            logger.info(f"Total weather data points fetched: {len(weather_data_list)}")
+        except Exception as e:
+            logger.error(f"Failed to fetch weather data: {e}")
+            return jsonify({
+                'success': False,
+                'error': f'Failed to fetch weather data: {str(e)}'
+            }), 500
+
+        # Insert weather data if fetched (all 10 rows)
+        weather_rows_inserted = 0
+        if weather_fetched and weather_data_list:
+            try:
+                conn = get_connection()
+                for weather_data in weather_data_list:
+                    insert_weather_data(conn, weather_data)
+                    weather_rows_inserted += 1
+                conn.close()
+                logger.info(f"Weather data inserted into database: {weather_rows_inserted} rows")
+            except Exception as e:
+                logger.error(f"Failed to insert weather data: {e}")
+                return jsonify({
+                    'success': False,
+                    'error': f'Failed to insert weather data: {str(e)}'
+                }), 500
+
+        return jsonify({
+            'success': True,
+            'weather_fetched': weather_fetched,
+            'weather_rows_inserted': weather_rows_inserted,
+            'weather_data_points': len(weather_data_list)
+        })
+
+    except Exception as e:
+        logger.error(f"OpenWeather API fetch failed: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @app.route('/trigger_ingestion', methods=['POST'])
 def trigger_ingestion():
     """Endpoint to trigger manual data ingestion"""
