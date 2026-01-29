@@ -685,3 +685,15 @@ Phase 11: Web-Sensor Data Integration,Combine local sensor + web API data for ri
 - **Requirements Update**: Added Flask to `requirements.txt` for web framework support
 - **Completed Implementations**: Added manual trigger for on-demand ingestion to completed features list
 
+================================================
+
+..notes 2026-01-29;
+[a] Data File Organization: Split data_collection.txt into separate files by source group (sim, nasa_power, openweather) with individual headers and summaries. Created collect1.txt (sim), collect2.txt (nasa_power), collect3.txt (openweather) in data/ directory. Removed original data_collection.txt after splitting.
+
+[b] HTML Dashboard Updates: Revised sim table to show latest 10 rows of data by sorting by timestamp descending. Added 'LI' (line item) column showing row numbers 1-10 for easy reference. Fixed fetch URL from '/data/collect1' to '/data/collect1.txt' to match Flask route.
+
+[c] Flask Server: Running ingestion_trigger.py on http://127.0.0.1:5000, serving dashboard.html with updated sim data table.
+
+[z] Summary of changes today: Organized data files by source groups, enhanced HTML dashboard with latest data display and row numbering, fixed API endpoints for proper data loading.
+================================================
+

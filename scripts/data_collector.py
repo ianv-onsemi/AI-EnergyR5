@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from db.db_connector import get_connection
 
-collection_file = 'data/data_collection.txt'
+collection_file = 'data/collect1.txt'
 
 def collect_data():
     # Get existing timestamps to avoid duplicates
@@ -64,7 +64,7 @@ def collect_data():
 
                 # OpenWeather: typically has temperature around 20-35°C, irradiance=0, wind_speed varies
                 if irradiance == 0.0 and 15 <= temperature <= 40:
-                    source = "openweather"
+                    source = "group openweather"
                 # NASA Power: typically has high irradiance values, temperature might be missing or different
                 elif irradiance > 100:
                     source = "nasa_power"

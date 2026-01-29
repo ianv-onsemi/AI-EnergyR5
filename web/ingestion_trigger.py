@@ -226,6 +226,21 @@ def stop_continuous_ingestion():
     continuous_ingestion_active = False
     logger.info("Continuous ingestion scheduler stopped")
 
+@app.route('/')
+def serve_dashboard():
+    """Serve the dashboard.html file"""
+    try:
+        dashboard_path = os.path.join(os.path.dirname(__file__), 'dashboard.html')
+        if os.path.exists(dashboard_path):
+            with open(dashboard_path, 'r') as f:
+                content = f.read()
+            return content, 200, {'Content-Type': 'text/html'}
+        else:
+            return 'Dashboard not found', 404
+    except Exception as e:
+        logger.error(f"Failed to serve dashboard: {e}")
+        return 'Error serving dashboard', 500
+
 @app.route('/check_postgres_status', methods=['GET'])
 def check_postgres_status():
     """Check PostgreSQL server status"""
@@ -396,6 +411,51 @@ def fetch_openweather():
             'success': False,
             'error': str(e)
         }), 500
+
+@app.route('/data/collect1.txt', methods=['GET'])
+def serve_collect1():
+    """Serve the collect1.txt file (sim data)"""
+    try:
+        data_file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'collect1.txt')
+        if os.path.exists(data_file_path):
+            with open(data_file_path, 'r') as f:
+                content = f.read()
+            return content, 200, {'Content-Type': 'text/plain'}
+        else:
+            return 'File not found', 404
+    except Exception as e:
+        logger.error(f"Failed to serve collect1.txt: {e}")
+        return 'Error serving file', 500
+
+@app.route('/data/collect2.txt', methods=['GET'])
+def serve_collect2():
+    """Serve the collect2.txt file (nasa_power data)"""
+    try:
+        data_file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'collect2.txt')
+        if os.path.exists(data_file_path):
+            with open(data_file_path, 'r') as f:
+                content = f.read()
+            return content, 200, {'Content-Type': 'text/plain'}
+        else:
+            return 'File not found', 404
+    except Exception as e:
+        logger.error(f"Failed to serve collect2.txt: {e}")
+        return 'Error serving file', 500
+
+@app.route('/data/collect3.txt', methods=['GET'])
+def serve_collect3():
+    """Serve the collect3.txt file (openweather data)"""
+    try:
+        data_file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'collect3.txt')
+        if os.path.exists(data_file_path):
+            with open(data_file_path, 'r') as f:
+                content = f.read()
+            return content, 200, {'Content-Type': 'text/plain'}
+        else:
+            return 'File not found', 404
+    except Exception as e:
+        logger.error(f"Failed to serve collect3.txt: {e}")
+        return 'Error serving file', 500
 
 @app.route('/trigger_ingestion', methods=['POST'])
 def trigger_ingestion():

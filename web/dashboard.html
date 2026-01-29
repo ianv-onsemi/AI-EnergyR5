@@ -34,10 +34,15 @@
 </head>
 <body>
     <h2>Table-1: Verify Sim</h2>
-    <p>This section displays simulated sensor data for verification purposes, showing 30 rows of generated readings.</p>
-    <table>
+    <p>This section displays simulated sensor data for verification purposes, loaded from collect1.txt.</p>
+    <div id="simTimestamp" class="mt-2 mb-2" style="font-size: 0.9em; color: #666;"></div>
+    <button id="loadSimDataBtn" class="btn btn-primary btn-sm me-2" onclick="loadSimData()">
+        <i class="fas fa-database"></i> Load Sim Data
+    </button>
+    <table id="simTable">
         <thead>
             <tr>
+                <th>LI</th>
                 <th>Timestamp</th>
                 <th>Temperature (°C)</th>
                 <th>Humidity (%)</th>
@@ -45,36 +50,17 @@
                 <th>Wind Speed (m/s)</th>
             </tr>
         </thead>
-        <tbody>
-            <tr><td>2026-01-20 08:00:00</td><td>22.45</td><td>55.23</td><td>245.67</td><td>3.21</td></tr>
-            <tr><td>2026-01-20 08:05:00</td><td>23.12</td><td>54.89</td><td>312.45</td><td>2.98</td></tr>
-            <tr><td>2026-01-20 08:10:00</td><td>24.78</td><td>53.67</td><td>387.92</td><td>4.15</td></tr>
-            <tr><td>2026-01-20 08:15:00</td><td>25.34</td><td>52.44</td><td>456.78</td><td>3.87</td></tr>
-            <tr><td>2026-01-20 08:20:00</td><td>26.91</td><td>51.23</td><td>523.41</td><td>4.32</td></tr>
-            <tr><td>2026-01-20 08:25:00</td><td>27.56</td><td>50.12</td><td>598.76</td><td>5.01</td></tr>
-            <tr><td>2026-01-20 08:30:00</td><td>28.23</td><td>49.87</td><td>667.89</td><td>4.78</td></tr>
-            <tr><td>2026-01-20 08:35:00</td><td>28.94</td><td>48.65</td><td>734.52</td><td>5.23</td></tr>
-            <tr><td>2026-01-20 08:40:00</td><td>29.67</td><td>47.43</td><td>801.15</td><td>5.67</td></tr>
-            <tr><td>2026-01-20 08:45:00</td><td>29.89</td><td>46.78</td><td>845.67</td><td>6.12</td></tr>
-            <tr><td>2026-01-20 08:50:00</td><td>29.45</td><td>47.12</td><td>812.34</td><td>5.89</td></tr>
-            <tr><td>2026-01-20 08:55:00</td><td>28.76</td><td>48.34</td><td>756.78</td><td>5.45</td></tr>
-            <tr><td>2026-01-20 09:00:00</td><td>27.89</td><td>49.56</td><td>689.12</td><td>4.98</td></tr>
-            <tr><td>2026-01-20 09:05:00</td><td>26.54</td><td>50.78</td><td>623.45</td><td>4.56</td></tr>
-            <tr><td>2026-01-20 09:10:00</td><td>25.23</td><td>51.89</td><td>567.89</td><td>4.12</td></tr>
-            <tr><td>2026-01-20 09:15:00</td><td>24.67</td><td>52.34</td><td>523.41</td><td>3.78</td></tr>
-            <tr><td>2026-01-20 09:20:00</td><td>24.12</td><td>53.12</td><td>489.76</td><td>3.45</td></tr>
-            <tr><td>2026-01-20 09:25:00</td><td>23.89</td><td>53.87</td><td>456.23</td><td>3.21</td></tr>
-            <tr><td>2026-01-20 09:30:00</td><td>23.45</td><td>54.23</td><td>423.67</td><td>2.98</td></tr>
-            <tr><td>2026-01-20 09:35:00</td><td>23.12</td><td>54.67</td><td>398.54</td><td>2.76</td></tr>
-            <tr><td>2026-01-20 09:40:00</td><td>22.78</td><td>55.12</td><td>376.89</td><td>2.54</td></tr>
-            <tr><td>2026-01-20 09:45:00</td><td>22.34</td><td>55.78</td><td>354.23</td><td>2.32</td></tr>
+        <tbody id="simTableBody">
+            <tr>
+                <td colspan="5" style="text-align: center; color: #666;">Click "Load Sim Data" to load simulated sensor data from file</td>
+            </tr>
         </tbody>
     </table>
 
     <h2>Table-2: Live Weather Data (Step 2.1 - OpenWeather API Integration)</h2>
     <p>This section displays real-time weather data fetched from OpenWeather API, including temperature, humidity, and wind speed. Data is updated when the ingestion button is triggered.</p>
-    <button id="loadWeatherFromDbBtn" class="btn btn-info btn-sm me-2" onclick="loadWeatherFromDb()">
-        <i class="fas fa-database"></i> Load Weather Data from Database
+    <button id="loadWeatherFromDbBtn" class="btn btn-info btn-sm me-2" onclick="loadWeatherFromFile()">
+        <i class="fas fa-database"></i> Load Weather Data from File
     </button>
     <div id="weatherDbStatus" class="mt-3" style="display: none;">
         <div id="weatherDbMessage" class="alert"></div>
@@ -205,8 +191,61 @@
         </div>
     </div>
 
-    <!-- JavaScript for ingestion trigger -->
+    <!-- JavaScript for data loading and ingestion trigger -->
     <script>
+        let dataCollection = {};
+        let lastUpdateTimestamp = '';
+        let lastSimData = [];
+
+        async function loadDataCollection() {
+            try {
+                const response = await fetch('/data/collect1.txt');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const text = await response.text();
+
+                // Parse the file content
+                const lines = text.split('\n');
+                let currentSection = '';
+                let timestamp = '';
+
+                // Extract timestamp from first line
+                if (lines[0] && lines[0].startsWith('# Data collection last updated:')) {
+                    timestamp = lines[0].replace('# Data collection last updated: ', '');
+                    lastUpdateTimestamp = timestamp;
+                }
+
+                dataCollection = { sim: [], nasa_power: [], openweather: [] };
+
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (line.startsWith('[') && line.endsWith(']')) {
+                        currentSection = line.slice(1, -1).toLowerCase().replace(' ', '_');
+                    } else if (line && !line.startsWith('timestamp,') && currentSection) {
+                        const parts = line.split(',');
+                        if (parts.length === 5 && currentSection in dataCollection) {
+                            const row = {
+                                timestamp: parts[0],
+                                temperature: parseFloat(parts[1]),
+                                humidity: parseFloat(parts[2]),
+                                irradiance: parseFloat(parts[3]),
+                                wind_speed: parseFloat(parts[4])
+                            };
+                            dataCollection[currentSection].push(row);
+                        }
+                    }
+                }
+
+                console.log('Data collection loaded:', dataCollection);
+                return true;
+            } catch (error) {
+                console.error('Error loading data collection:', error);
+                logError('Data Loading', 'File Load Error', `Failed to load data_collection.txt: ${error.message}`, 'Error');
+                return false;
+            }
+        }
+
         async function triggerIngestion() {
             const btn = document.getElementById('triggerIngestionBtn');
             const statusDiv = document.getElementById('ingestionStatus');
@@ -537,6 +576,128 @@
             }
         }
 
+        async function loadSimData() {
+            const btn = document.getElementById('loadSimDataBtn');
+            const tableBody = document.getElementById('simTableBody');
+            const timestampDiv = document.getElementById('simTimestamp');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+            try {
+                const success = await loadDataCollection();
+                if (success && dataCollection.sim && dataCollection.sim.length > 0) {
+                    // Display timestamp
+                    if (lastUpdateTimestamp) {
+                        timestampDiv.innerHTML = `<strong>Last updated:</strong> ${lastUpdateTimestamp}`;
+                    }
+
+                    // Sort sim data by timestamp descending and get the latest 10 rows
+                    const sortedSimData = dataCollection.sim.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    const last10Rows = sortedSimData.slice(0, 10);
+
+                    // Check if data has changed
+                    const currentDataString = JSON.stringify(last10Rows);
+                    const lastDataString = JSON.stringify(lastSimData);
+
+                    if (currentDataString !== lastDataString) {
+                        // Data has changed, update the table
+                        lastSimData = [...last10Rows]; // Store copy of current data
+
+                        // Populate the table
+                        tableBody.innerHTML = last10Rows.map((row, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${row.timestamp}</td>
+                                <td>${row.temperature.toFixed(2)}</td>
+                                <td>${row.humidity.toFixed(2)}</td>
+                                <td>${row.irradiance.toFixed(2)}</td>
+                                <td>${row.wind_speed.toFixed(2)}</td>
+                            </tr>
+                        `).join('');
+
+                        console.log('Sim data updated - new data loaded');
+                    } else {
+                        console.log('Sim data unchanged - no update needed');
+                    }
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">No sim data found in file</td></tr>';
+                }
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">Error loading sim data</td></tr>';
+                logError('Sim Data Loading', 'Load Error', error.message, 'Error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-database"></i> Load Sim Data';
+            }
+        }
+
+        async function loadWeatherFromFile() {
+            const btn = document.getElementById('loadWeatherFromDbBtn');
+            const statusDiv = document.getElementById('weatherDbStatus');
+            const statusMessage = document.getElementById('weatherDbMessage');
+            const tableBody = document.getElementById('weatherTableBody');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            statusDiv.style.display = 'block';
+            statusMessage.className = 'alert alert-info';
+            statusMessage.innerHTML = 'Loading weather data from file...';
+
+            try {
+                const success = await loadDataCollection();
+                if (success && dataCollection.group_openweather && dataCollection.group_openweather.length > 0) {
+                    statusMessage.className = 'alert alert-success';
+                    statusMessage.innerHTML = `<strong>Weather Data Loaded:</strong> ${dataCollection.group_openweather.length} records retrieved from file`;
+
+                    // Populate the table
+                    tableBody.innerHTML = dataCollection.group_openweather.map(row => `
+                        <tr>
+                            <td>${row.timestamp}</td>
+                            <td>${row.temperature.toFixed(2)}</td>
+                            <td>${row.humidity.toFixed(2)}</td>
+                            <td>${row.wind_speed.toFixed(2)}</td>
+                            <td>group openweather</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    statusMessage.className = 'alert alert-warning';
+                    statusMessage.innerHTML = '<strong>No Data Found:</strong> No weather data available in file';
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">No weather data found in file</td></tr>';
+                }
+            } catch (error) {
+                statusMessage.className = 'alert alert-danger';
+                statusMessage.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">Error loading data from file</td></tr>';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-database"></i> Load Weather Data from File';
+            }
+        }
+
+        async function loadNasaPowerData() {
+            const tableBody = document.getElementById('nasaPowerTableBody');
+
+            try {
+                const success = await loadDataCollection();
+                if (success && dataCollection.nasa_power && dataCollection.nasa_power.length > 0) {
+                    // Populate the table
+                    tableBody.innerHTML = dataCollection.nasa_power.map(row => `
+                        <tr>
+                            <td>${row.timestamp}</td>
+                            <td>${row.irradiance.toFixed(2)}</td>
+                            <td>nasa_power</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #666;">No NASA Power data found in file</td></tr>';
+                }
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #666;">Error loading NASA Power data</td></tr>';
+                logError('NASA Power Data Loading', 'Load Error', error.message, 'Error');
+            }
+        }
+
         async function loadWeatherFromDb() {
             const btn = document.getElementById('loadWeatherFromDbBtn');
             const statusDiv = document.getElementById('weatherDbStatus');
@@ -672,6 +833,12 @@
         function refreshErrorLogs() {
             updateErrorLogsDisplay();
         }
+
+        // Auto-load data on page load
+        window.onload = function() {
+            loadNasaPowerData();
+            loadSimData(); // Auto-load sim data on page load
+        };
 
         // Override existing functions to add error logging
         const originalTriggerIngestion = window.triggerIngestion;
