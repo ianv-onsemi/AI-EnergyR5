@@ -226,6 +226,77 @@ def stop_continuous_ingestion():
     continuous_ingestion_active = False
     logger.info("Continuous ingestion scheduler stopped")
 
+@app.route('/check_postgres_status', methods=['GET'])
+def check_postgres_status():
+    """Check PostgreSQL server status"""
+    try:
+        # Path to pg_ctl.exe on Windows
+        pg_ctl_path = r"D:\My Documents\tools\postgresql\pgsql\bin\pg_ctl.exe"
+        data_dir = r"D:\My Documents\tools\postgresql\pgsql\data"
+
+        result = subprocess.run([pg_ctl_path, "-D", data_dir, "status"],
+                               capture_output=True, text=True)
+
+        if result.returncode == 0:
+            return jsonify({'success': True, 'status': 'running', 'message': result.stdout.strip()})
+        else:
+            return jsonify({'success': False, 'status': 'not running', 'message': result.stderr.strip()})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/verify_db_connection', methods=['GET'])
+def verify_db_connection():
+    """Verify database connection by running test_connection.py"""
+    try:
+        result = subprocess.run([sys.executable, "../db/test_connection.py"],
+                               capture_output=True, text=True, cwd=os.path.dirname(__file__))
+
+        if result.returncode == 0:
+            return jsonify({'success': True, 'output': result.stdout.strip()})
+        else:
+            return jsonify({'success': False, 'error': result.stderr.strip()})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/test_automatic_ingestion', methods=['POST'])
+def test_automatic_ingestion():
+    """Test automatic ingestion function"""
+    try:
+        result = perform_continuous_ingestion()
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/start_streamlit', methods=['POST'])
+def start_streamlit():
+    """Start Streamlit dashboard in background"""
+    try:
+        # Start Streamlit in background
+        subprocess.Popen([sys.executable, "-m", "streamlit", "run", "web/dashboard.py"],
+                        cwd=os.path.dirname(__file__), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return jsonify({'success': True, 'message': 'Streamlit dashboard started. Check your browser at http://localhost:8501'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/view_logs', methods=['GET'])
+def view_logs():
+    """View ingestion logs"""
+    try:
+        log_path = os.path.join(os.path.dirname(__file__), '..', 'logs', 'ingestion.log')
+        if os.path.exists(log_path):
+            with open(log_path, 'r') as f:
+                content = f.read()
+            return jsonify({'success': True, 'logs': content})
+        else:
+            return jsonify({'success': False, 'error': 'Log file not found'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/final_db_check', methods=['GET'])
+def final_db_check():
+    """Final database check (same as verify_db_connection)"""
+    return verify_db_connection()
+
 @app.route('/trigger_ingestion', methods=['POST'])
 def trigger_ingestion():
     """Endpoint to trigger manual data ingestion"""

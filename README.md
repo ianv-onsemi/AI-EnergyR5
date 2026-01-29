@@ -72,7 +72,7 @@ AI-EnergyR5/
     ├── dashboard.py      # Streamlit dashboard
     ├── generate_html_table.py # HTML table generation
     ├── ingestion_trigger.py   # Flask endpoint for ingestion
-    └── solar_wind_display.html # HTML interface for data display
+    └── dashboard.html # HTML interface for data display
 ```
 
 ### 2. PostgreSQL Database Management
@@ -373,6 +373,99 @@ python db/test_connection.py
 # Test automatic collection
 python -c "from web.ingestion_trigger import perform_continuous_ingestion; print(perform_continuous_ingestion())"
 ```
+
+### Alternative: Use HTML Interface for Phase 8 Steps
+
+For a more user-friendly experience, start directly with the interactive HTML interface that provides clickable buttons for all Phase 8 steps and routines.
+
+#### Prerequisites
+- Python environment with all packages installed (`pip install -r requirements.txt`)
+- Internet connection for API data
+- PostgreSQL database (will be started via HTML interface)
+
+#### Step 1: Launch the HTML Interface
+
+1. **Navigate to the web folder**:
+   ```bash
+   cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5\web"
+   ```
+
+2. **Start the Flask web server and open HTML interface**:
+   ```bash
+   python ingestion_trigger.py
+   ```
+   - The server will start and automatically open your default web browser to `http://localhost:5000/static/dashboard.html`
+   - You should see: "Running on http://0.0.0.0:5000"
+   - Keep this window open
+
+#### Step 2: Use the Interactive Buttons
+
+The HTML page provides buttons for each Phase 8 routine with function descriptions:
+
+**System Setup Buttons:**
+- **Start Flask Web Server**: Launches the Flask server (already running when you open the page)
+- **Check PostgreSQL Status**: Verifies if PostgreSQL database server is running
+- **Verify DB Connection**: Tests database connectivity and shows existing data
+
+**Data Collection Buttons:**
+- **Trigger Data Ingestion**: Manually collects sensor data from APIs (weather + solar)
+- **Test Automatic Ingestion**: Simulates scheduled data collection (time-based)
+
+**Visualization Buttons:**
+- **Start Streamlit Dashboard**: Launches interactive charts and analytics dashboard
+- **View HTML Table**: Generates and displays data in HTML table format
+
+**Monitoring Buttons:**
+- **View Ingestion Logs**: Shows recent log entries with timestamps and status
+- **Final DB Check**: Performs final verification of data storage
+
+#### Step 3: Monitor Routine Completion
+
+Each button provides real-time feedback on routine completion:
+
+- **Success Indicators**: Green alerts showing "Success!" with details like rows added, data fetched, etc.
+- **Progress Messages**: Loading spinners and "Processing..." messages during execution
+- **Error Handling**: Red alerts for failures with specific error messages
+- **Status Updates**: Real-time updates on data collection progress, API calls, and database operations
+
+#### Step 4: Complete the Full Phase 8 Routine
+
+Follow this sequence for complete Phase 8 testing:
+
+1. **Environment Setup**:
+   - Click "Check PostgreSQL Status" → Should show "running"
+   - Click "Verify DB Connection" → Should display existing sensor data table
+
+2. **Data Collection**:
+   - Click "Trigger Data Ingestion" → Collects 10 weather + 10 solar data points
+   - Click "Test Automatic Ingestion" → Tests scheduled collection logic
+
+3. **Data Visualization**:
+   - Click "Start Streamlit Dashboard" → Opens interactive charts at http://localhost:8501
+   - Click "View HTML Table" → Shows data in formatted HTML table
+
+4. **Verification**:
+   - Click "View Ingestion Logs" → Check for successful data collection entries
+   - Click "Final DB Check" → Confirm new data rows were added to database
+
+#### Step 5: Error Logs and Troubleshooting
+
+The bottom of the HTML page includes 5 rows for error logs and troubleshooting:
+
+1. **Real-time Error Display**: Errors appear immediately below buttons with red alerts
+2. **Log Viewer**: "View Ingestion Logs" button shows detailed server logs
+3. **Status Messages**: Each button shows success/failure status with details
+4. **Network Issues**: API failures and connection problems are logged
+5. **Database Errors**: Connection failures and query errors are displayed
+
+**Common Issues and Solutions:**
+- **"Flask server not responding"**: Restart `python ingestion_trigger.py`
+- **"PostgreSQL not running"**: Use "Check PostgreSQL Status" button to diagnose
+- **"API key errors"**: Check `config.py` for valid API keys
+- **"No data collected"**: Verify internet connection and API limits
+- **"Streamlit won't start"**: Check if port 8501 is available
+
+This HTML interface provides a complete, self-contained Phase 8 testing environment with visual feedback and error handling!
 
 This complete guide takes you from setting up the environment to collecting data and viewing beautiful charts in your web browser. The Phase 8 system automatically combines simulated sensor data with real weather and solar data, giving you a comprehensive view of your renewable energy system's performance!
 
