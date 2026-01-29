@@ -526,18 +526,18 @@ The project is organized into phases for systematic development. Below is the la
 - Enable continuous ingestion pipeline ✅ Done
 - HTML interface integration for Phase 8 steps ✅ Done
 
-### Phase 9: Predictive Analytics ⏳ Pending
-- Calculate averages/min/max/moving averages
-- Train ML model for forecasting (scikit-learn)
-
-### Phase 10: Deployment & Scaling ⏳ Pending
-- Containerize with Docker
-- Deploy to cloud (AWS/Azure/GCP)
-
-### Phase 11: Web-Sensor Data Integration 🔄 Partial
+### Phase 9: Web-Sensor Data Integration 🔄 Partial
 - Connect to OpenWeather API for local weather data ✅ Done
 - Ingest NASA POWER API for solar irradiance and climate data ✅ Done
 - Integrate PVOutput API for solar PV system performance ⏳ Pending
 - Optional: Add other APIs (NOAA, Meteostat, etc.) ⏳ Pending
 - Normalize and store web-sensor data into sensor_data table ✅ Done
 - Combine local sensor + web API data for richer analytics ⏳ Pending
+
+### Phase 10: Predictive Analytics ⏳ Pending
+- Calculate averages/min/max/moving averages
+- Train ML model for forecasting (scikit-learn)
+
+### Phase 11: Deployment & Scaling ⏳ Pending
+- Containerize with Docker
+- Deploy to cloud (AWS/Azure/GCP)

@@ -49,24 +49,24 @@ def count_rows(conn):
         logger.error(f"Error counting rows: {e}")
         return None
 
-def insert_sensor_data(conn, timestamp, temperature, humidity, irradiance, wind_speed):
+def insert_sensor_data(conn, timestamp, temperature, humidity, irradiance, wind_speed, source="unknown"):
     """Insert one row into sensor_data table, strip microseconds, skip duplicates."""
     try:
         ts = datetime.fromisoformat(timestamp).replace(microsecond=0)
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed, source)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 ON CONFLICT (timestamp) DO NOTHING;
                 """,
-                (ts, temperature, humidity, irradiance, wind_speed)
+                (ts, temperature, humidity, irradiance, wind_speed, source)
             )
         conn.commit()
     except Exception as e:
         logger.error(f"Insert failed: {e}")
 
-def ingest_text_file(conn, filepath="data/sensor_logs.txt"):
+def ingest_text_file(conn, filepath="data/sensor_logs.txt", source="sim"):
     """Read plain text log file and insert rows."""
     try:
         with open(filepath, "r") as f:
@@ -77,14 +77,14 @@ def ingest_text_file(conn, filepath="data/sensor_logs.txt"):
                     continue
                 if len(parts) == 5:
                     timestamp, temperature, humidity, irradiance, wind_speed = parts
-                    insert_sensor_data(conn, timestamp, float(temperature), float(humidity), float(irradiance), float(wind_speed))
+                    insert_sensor_data(conn, timestamp, float(temperature), float(humidity), float(irradiance), float(wind_speed), source)
         logger.info("Text file ingestion complete.")
     except FileNotFoundError:
         logger.warning(f"{filepath} not found.")
     except Exception as e:
         logger.error(f"Error ingesting text file: {e}")
 
-def ingest_csv_file(conn, filepath="data/sensor_data.csv"):
+def ingest_csv_file(conn, filepath="data/sensor_data.csv", source="csv"):
     """Read CSV file and insert rows."""
     try:
         with open(filepath, newline="") as csvfile:
@@ -96,7 +96,8 @@ def ingest_csv_file(conn, filepath="data/sensor_data.csv"):
                     float(row["temperature"]),
                     float(row["humidity"]),
                     float(row["irradiance"]),
-                    float(row["wind_speed"])
+                    float(row["wind_speed"]),
+                    source
                 )
         logger.info("CSV ingestion complete.")
     except FileNotFoundError:

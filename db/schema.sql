@@ -10,7 +10,8 @@ CREATE TABLE sensor_data (
     temperature DECIMAL(5,2),
     humidity DECIMAL(5,2),
     irradiance DECIMAL(7,2),
-    wind_speed DECIMAL(5,2)
+    wind_speed DECIMAL(5,2),
+    source VARCHAR(50)
 );
 
 -- Optional: Add TimescaleDB extension for better time-series performance

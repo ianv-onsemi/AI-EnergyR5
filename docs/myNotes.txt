@@ -503,16 +503,16 @@ Phase 7: Visualization & Dashboard,Add multiple charts (humidity, irradiance, wi
 Phase 7: Visualization & Dashboard,Build simple dashboard (Streamlit or Grafana),Pending
 Phase 8: Real-Time Ingestion,Simulate sensor streams (append rows every minute),Pending
 Phase 8: Real-Time Ingestion,Enable continuous ingestion pipeline,Pending
-Phase 9: Predictive Analytics,Calculate averages/min/max/moving averages,Pending
-Phase 9: Predictive Analytics,Train ML model for forecasting (scikit-learn),Pending
-Phase 10: Deployment & Scaling,Containerize with Docker,Pending
-Phase 10: Deployment & Scaling,Deploy to cloud (AWS/Azure/GCP),Pending
-Phase 11: Web-Sensor Data Integration,Connect to OpenWeather API for local weather data,Done
-Phase 11: Web-Sensor Data Integration,Ingest NASA POWER API for solar irradiance and climate data,Done
-Phase 11: Web-Sensor Data Integration,Integrate PVOutput API for solar PV system performance,Pending
-Phase 11: Web-Sensor Data Integration,Optional: Add other APIs (NOAA, Meteostat, etc.),Pending
-Phase 11: Web-Sensor Data Integration,Normalize and store web-sensor data into sensor_data table,Done
-Phase 11: Web-Sensor Data Integration,Combine local sensor + web API data for richer analytics,Pending
+Phase 9: Web-Sensor Data Integration,Connect to OpenWeather API for local weather data,Done
+Phase 9: Web-Sensor Data Integration,Ingest NASA POWER API for solar irradiance and climate data,Done
+Phase 9: Web-Sensor Data Integration,Integrate PVOutput API for solar PV system performance,Pending
+Phase 9: Web-Sensor Data Integration,Optional: Add other APIs (NOAA, Meteostat, etc.),Pending
+Phase 9: Web-Sensor Data Integration,Normalize and store web-sensor data into sensor_data table,Done
+Phase 9: Web-Sensor Data Integration,Combine local sensor + web API data for richer analytics,Pending
+Phase 10: Predictive Analytics,Calculate averages/min/max/moving averages,Pending
+Phase 10: Predictive Analytics,Train ML model for forecasting (scikit-learn),Pending
+Phase 11: Deployment & Scaling,Containerize with Docker,Pending
+Phase 11: Deployment & Scaling,Deploy to cloud (AWS/Azure/GCP),Pending
 ...Phase 6: Automate Ingestion
 Step 2: Windows Batch File (simple automation)
     Open Notepad.

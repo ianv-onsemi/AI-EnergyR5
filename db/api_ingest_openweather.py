@@ -46,11 +46,11 @@ if response.status_code == 200:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed, source)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 ON CONFLICT (timestamp) DO NOTHING;
                 """,
-                (timestamp, temperature, humidity, irradiance, wind_speed)
+                (timestamp, temperature, humidity, irradiance, wind_speed, "openweather")
             )
         conn.commit()
         logging.info("Weather data inserted successfully.")
