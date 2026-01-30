@@ -36,9 +36,17 @@
     <h2>Table-1: Verify Sim</h2>
     <p>This section displays simulated sensor data for verification purposes, loaded from collect1.txt.</p>
     <div id="simTimestamp" class="mt-2 mb-2" style="font-size: 0.9em; color: #666;"></div>
-    <button id="loadSimDataBtn" class="btn btn-primary btn-sm me-2" onclick="loadSimData()">
-        <i class="fas fa-database"></i> Load Sim Data
-    </button>
+    <div class="mb-3">
+        <button id="loadLatestBtn" class="btn btn-primary btn-sm me-2" onclick="loadLatestData()">
+            <i class="fas fa-clock"></i> Latest 10 Rows
+        </button>
+        <button id="loadTopWindBtn" class="btn btn-info btn-sm me-2" onclick="loadTopWindSpeed()">
+            <i class="fas fa-wind"></i> Top 10 Wind Speed
+        </button>
+        <button id="loadTopIrradianceBtn" class="btn btn-warning btn-sm" onclick="loadTopIrradiance()">
+            <i class="fas fa-sun"></i> Top 10 Solar Irradiance
+        </button>
+    </div>
     <table id="simTable">
         <thead>
             <tr>
@@ -576,8 +584,8 @@
             }
         }
 
-        async function loadSimData() {
-            const btn = document.getElementById('loadSimDataBtn');
+        async function loadLatestData() {
+            const btn = document.getElementById('loadLatestBtn');
             const tableBody = document.getElementById('simTableBody');
             const timestampDiv = document.getElementById('simTimestamp');
 
@@ -596,39 +604,118 @@
                     const sortedSimData = dataCollection.sim.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                     const last10Rows = sortedSimData.slice(0, 10);
 
-                    // Check if data has changed
-                    const currentDataString = JSON.stringify(last10Rows);
-                    const lastDataString = JSON.stringify(lastSimData);
+                    // Populate the table
+                    tableBody.innerHTML = last10Rows.map((row, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${row.timestamp}</td>
+                            <td>${row.temperature.toFixed(2)}</td>
+                            <td>${row.humidity.toFixed(2)}</td>
+                            <td>${row.irradiance.toFixed(2)}</td>
+                            <td>${row.wind_speed.toFixed(2)}</td>
+                        </tr>
+                    `).join('');
 
-                    if (currentDataString !== lastDataString) {
-                        // Data has changed, update the table
-                        lastSimData = [...last10Rows]; // Store copy of current data
-
-                        // Populate the table
-                        tableBody.innerHTML = last10Rows.map((row, index) => `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${row.timestamp}</td>
-                                <td>${row.temperature.toFixed(2)}</td>
-                                <td>${row.humidity.toFixed(2)}</td>
-                                <td>${row.irradiance.toFixed(2)}</td>
-                                <td>${row.wind_speed.toFixed(2)}</td>
-                            </tr>
-                        `).join('');
-
-                        console.log('Sim data updated - new data loaded');
-                    } else {
-                        console.log('Sim data unchanged - no update needed');
-                    }
+                    console.log('Latest sim data loaded');
                 } else {
-                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">No sim data found in file</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No sim data found in file</td></tr>';
                 }
             } catch (error) {
-                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">Error loading sim data</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">Error loading sim data</td></tr>';
                 logError('Sim Data Loading', 'Load Error', error.message, 'Error');
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-database"></i> Load Sim Data';
+                btn.innerHTML = '<i class="fas fa-clock"></i> Latest 10 Rows';
+            }
+        }
+
+        async function loadTopWindSpeed() {
+            const btn = document.getElementById('loadTopWindBtn');
+            const tableBody = document.getElementById('simTableBody');
+            const timestampDiv = document.getElementById('simTimestamp');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+            try {
+                const success = await loadDataCollection();
+                if (success && dataCollection.sim && dataCollection.sim.length > 0) {
+                    // Display timestamp
+                    if (lastUpdateTimestamp) {
+                        timestampDiv.innerHTML = `<strong>Last updated:</strong> ${lastUpdateTimestamp}`;
+                    }
+
+                    // Sort sim data by wind speed descending and get the top 10 rows
+                    const sortedSimData = dataCollection.sim.sort((a, b) => b.wind_speed - a.wind_speed);
+                    const top10Rows = sortedSimData.slice(0, 10);
+
+                    // Populate the table
+                    tableBody.innerHTML = top10Rows.map((row, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${row.timestamp}</td>
+                            <td>${row.temperature.toFixed(2)}</td>
+                            <td>${row.humidity.toFixed(2)}</td>
+                            <td>${row.irradiance.toFixed(2)}</td>
+                            <td>${row.wind_speed.toFixed(2)}</td>
+                        </tr>
+                    `).join('');
+
+                    console.log('Top wind speed sim data loaded');
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No sim data found in file</td></tr>';
+                }
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">Error loading sim data</td></tr>';
+                logError('Sim Data Loading', 'Load Error', error.message, 'Error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-wind"></i> Top 10 Wind Speed';
+            }
+        }
+
+        async function loadTopIrradiance() {
+            const btn = document.getElementById('loadTopIrradianceBtn');
+            const tableBody = document.getElementById('simTableBody');
+            const timestampDiv = document.getElementById('simTimestamp');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+            try {
+                const success = await loadDataCollection();
+                if (success && dataCollection.sim && dataCollection.sim.length > 0) {
+                    // Display timestamp
+                    if (lastUpdateTimestamp) {
+                        timestampDiv.innerHTML = `<strong>Last updated:</strong> ${lastUpdateTimestamp}`;
+                    }
+
+                    // Sort sim data by irradiance descending and get the top 10 rows
+                    const sortedSimData = dataCollection.sim.sort((a, b) => b.irradiance - a.irradiance);
+                    const top10Rows = sortedSimData.slice(0, 10);
+
+                    // Populate the table
+                    tableBody.innerHTML = top10Rows.map((row, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${row.timestamp}</td>
+                            <td>${row.temperature.toFixed(2)}</td>
+                            <td>${row.humidity.toFixed(2)}</td>
+                            <td>${row.irradiance.toFixed(2)}</td>
+                            <td>${row.wind_speed.toFixed(2)}</td>
+                        </tr>
+                    `).join('');
+
+                    console.log('Top irradiance sim data loaded');
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No sim data found in file</td></tr>';
+                }
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">Error loading sim data</td></tr>';
+                logError('Sim Data Loading', 'Load Error', error.message, 'Error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sun"></i> Top 10 Solar Irradiance';
             }
         }
 
