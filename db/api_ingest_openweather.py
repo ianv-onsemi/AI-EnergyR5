@@ -22,41 +22,47 @@ conn = psycopg2.connect(
 # ----------------------------
 # OpenWeather API setup
 # ----------------------------
-API_KEY = "0723d71a05e58ae3f7fc91e39a901e6b"   # <-- replace with your OpenWeather API key
-CITY = "Manila"                 # <-- replace with your city
-URL = f"http://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={API_KEY}&units=metric"
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from api_wrappers.openweather import get_weather_data
 
 # ----------------------------
-# Fetch weather data
+# Fetch enhanced weather data with energy calculations
 # ----------------------------
-response = requests.get(URL)
-data = response.json()
+weather_data = get_weather_data()
 
-if response.status_code == 200:
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    temperature = data["main"]["temp"]
-    humidity = data["main"]["humidity"]
-    wind_speed = data["wind"]["speed"]
-    irradiance = 0.0  # placeholder, OpenWeather doesn’t provide irradiance
+if weather_data:
+    timestamp = weather_data["timestamp"]
+    temperature = weather_data["temperature"]
+    humidity = weather_data["humidity"]
+    wind_speed = weather_data["wind_speed"]
+    irradiance = weather_data["solar_irradiance"]
+    wind_power_density = weather_data["wind_power_density"]
+    solar_energy_yield = weather_data["solar_energy_yield"]
 
-    logging.info(f"Weather data: {timestamp}, {temperature}°C, {humidity}%, {wind_speed} m/s")
+    logging.info(f"Enhanced weather data: {timestamp}")
+    logging.info(f"Temperature: {temperature}°C, Humidity: {humidity}%, Wind Speed: {wind_speed} m/s")
+    logging.info(f"Solar Irradiance: {irradiance} W/m², Wind Power Density: {wind_power_density} W/m²")
+    logging.info(f"Solar Energy Yield: {solar_energy_yield} kWh/m²/day")
 
-    # Insert into sensor_data table
+    # Insert into sensor_data table with new energy fields
     try:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed, source)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed, wind_power_density, solar_energy_yield, source)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (timestamp) DO NOTHING;
                 """,
-                (timestamp, temperature, humidity, irradiance, wind_speed, "openweather")
+                (timestamp, temperature, humidity, irradiance, wind_speed, wind_power_density, solar_energy_yield, "openweather")
             )
         conn.commit()
-        logging.info("Weather data inserted successfully.")
+        logging.info("Enhanced weather data inserted successfully.")
     except Exception as e:
         logging.error(f"Insert failed: {e}")
+        logging.error(f"Data attempted: {weather_data}")
 else:
-    logging.error(f"Failed to fetch data: {data}")
+    logging.error("Failed to fetch weather data from OpenWeather API")
 
 conn.close()

@@ -96,6 +96,8 @@
                 <th>Humidity (%)</th>
                 <th>Solar Irradiance (W/m²)</th>
                 <th>Wind Speed (m/s)</th>
+                <th>Wind Power Density (W/m²)</th>
+                <th>Solar Energy Yield (kWh/m²/day)</th>
                 <th>Source</th>
             </tr>
         </thead>
@@ -974,6 +976,8 @@
                             <td>${row.humidity.toFixed(2)}</td>
                             <td>${row.irradiance.toFixed(2)}</td>
                             <td>${row.wind_speed.toFixed(2)}</td>
+                            <td>${row.wind_power_density ? row.wind_power_density.toFixed(2) : 'N/A'}</td>
+                            <td>${row.solar_energy_yield ? row.solar_energy_yield.toFixed(2) : 'N/A'}</td>
                             <td>${row.source}</td>
                         </tr>
                     `).join('');

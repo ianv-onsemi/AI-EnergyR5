@@ -11,6 +11,8 @@ CREATE TABLE sensor_data (
     humidity DECIMAL(5,2),
     irradiance DECIMAL(7,2),
     wind_speed DECIMAL(5,2),
+    wind_power_density DECIMAL(7,2),  -- Wind power density in W/m²
+    solar_energy_yield DECIMAL(7,2),  -- Solar energy yield in kWh/m²/day
     source VARCHAR(50)
 );
 
