@@ -26,20 +26,23 @@ AI-EnergyR5/
 ├── requirements.txt      # List of Python dependencies
 │
 ├── api_wrappers/         # External API integration modules
-│   ├── openweather.py    # OpenWeather API wrapper for weather data
-│   └── nasa_power.py     # NASA POWER API wrapper for solar irradiance data
+│   ├── nasa_power.py     # NASA POWER API wrapper for solar irradiance data
+│   └── openweather.py    # OpenWeather API wrapper for weather data
 │
 ├── data/                 # Data files and logs
-│   ├── sensor_logs.txt   # Plain text sensor log file
-│   └── sensor_data.csv   # CSV file for sensor data
+│   ├── collect1.txt      # Collected data sim
+│   ├── collect2.txt      # Collected data nasapower
+│   ├── collect3.txt      # Collected data openweather
+│   ├── sensor_data.csv   # CSV file for sensor data
+│   └── sensor_logs.txt   # Plain text sensor log file
 │
 ├── db/                   # Database setup and connectors
+│   ├── api_ingest_openweather.py # OpenWeather API ingestion
 │   ├── db_connector.py   # Python script for DB connection
 │   ├── db_ingest.py      # Data ingestion script
-│   ├── test_connection.py # Quick connection test script
 │   ├── schema.sql        # SQL table definitions
 │   ├── sensor_stream_sim.py # Sensor stream simulation
-│   └── api_ingest_openweather.py # OpenWeather API ingestion
+│   └── test_connection.py # Quick connection test script
 │
 ├── docs/                 # Documentation and notes
 │   ├── myNotes.txt       # Development notes and progress logs
@@ -58,21 +61,28 @@ AI-EnergyR5/
 │
 ├── scripts/              # Utility scripts
 │   ├── capture_weather_data.py # Automated weather data capture
-│   ├── show_recent_data.py     # Display recent sensor data
-│   └── run_ingest.bat          # Batch file for scheduled ingestion
+│   ├── count_data_sources.py   # Count data sources utility
+│   ├── data_collector.py       # Data collection script
+│   ├── run_ingest.bat          # Batch file for scheduled ingestion
+│   └── show_recent_data.py     # Display recent sensor data
 │
 ├── sensors/              # Sensor data scripts
-│   └── sensor_ingest.py  # Generate or simulate sensor readings
+│   ├── sensor_ingest.py  # Generate or simulate sensor readings
+│   └── sensor_logs.txt   # Sensor logs
 │
 ├── tests/                # Testing and validation scripts
 │   ├── check_schema.py   # Schema validation
 │   └── test_imports.py   # Import testing
 │
 └── web/                  # Web-related files
+    ├── dashboard.html    # HTML interface for data display
     ├── dashboard.py      # Streamlit dashboard
     ├── generate_html_table.py # HTML table generation
     ├── ingestion_trigger.py   # Flask endpoint for ingestion
-    └── dashboard.html # HTML interface for data display
+    ├── data/             # Web-specific data files
+    │   └── sensor_logs.txt # Web sensor logs
+    └── logs/             # Web-specific logs
+        └── ingestion.log # Web ingestion log
 ```
 
 ### 2. PostgreSQL Database Management
@@ -134,79 +144,18 @@ This project uses PostgreSQL as the database backend. Follow these steps to turn
   - User: `postgres`
   - Password: `PdM`
 - To test the database connection, run: `python db/test_connection.py`
-
-#### Notes
-
-For detailed development notes and progress logs, refer to `mynotes.txt`.
+- For detailed development notes and progress logs, refer to `mynotes.txt`
 
 ---
 
 ## 📖 User Guide
 
-### PostgreSQL Database Management
 
-This project uses PostgreSQL as the database backend. Follow these steps to turn PostgreSQL on and off:
-
-#### Turn PostgreSQL On (Start the Server)
-1. **Open Command Prompt Window**:
-   - Press `Win + R`, type `cmd`, and press Enter
-   - Or search for "Command Prompt" in the Start menu
-
-2. **Navigate to PostgreSQL Bin Directory**:
-   - In the Command Prompt window, type the following command and press Enter:
-     ```
-     cd "D:\My Documents\tools\postgresql\pgsql\bin"
-     ```
-
-3. **Start PostgreSQL Server**:
-   - In the same Command Prompt window, type the following command and press Enter:
-     ```bash
-     pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" -l logfile start
-     ```
-   - This starts PostgreSQL in the background on port 5432
-   - You should see a message indicating the server is starting
-   - The server will continue running until manually stopped
-
-4. **Verify PostgreSQL is Running** (Optional):
-   - In the same Command Prompt window, type the following command and press Enter:
-     ```bash
-     pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" status
-     ```
-   - Should show: "pg_ctl: server is running (PID: XXXX)"
-
-#### Turn PostgreSQL Off (Stop the Server)
-1. **Open Command Prompt Window**:
-   - Press `Win + R`, type `cmd`, and press Enter
-   - Or search for "Command Prompt" in the Start menu
-
-2. **Navigate to PostgreSQL Bin Directory**:
-   - In the Command Prompt window, type the following command and press Enter:
-     ```bash
-     cd "D:\My Documents\tools\postgresql\pgsql\bin"
-     ```
-
-3. **Stop PostgreSQL Server**:
-   - In the same Command Prompt window, type the following command and press Enter:
-     ```bash
-     pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" stop
-     ```
-   - This performs a clean shutdown of the database server
-   - You should see a message indicating the server is stopping
-
-#### Notes
-- PostgreSQL must be running before you can connect to the database from Python scripts
-- The database connection settings are configured in `db/db_connector.py` with default values:
-  - Host: `localhost`
-  - Port: `5432`
-  - Database: `energy_db`
-  - User: `postgres`
-  - Password: `PdM`
-- To test the database connection, run: `python db/test_connection.py`
 
 ### Complete Step-by-Step Guide: Test Phase 8 Real-Time Data Collection and View Results in Web Interface
 
 #### Overview
-This guide walks you through testing Phase 8's real-time data collection features and viewing the results in the web interface. Phase 8 includes two data collection methods: manual trigger and scheduled ingestion. By the end of this guide, you'll see your collected data displayed in interactive charts and tables.
+This guide walks you through testing Phase 8's real-time data collection features and viewing the results in the web interface. Phase 8 includes two data collection methods: manual trigger and scheduled ingestion. By the end of this guide, you'll see your collected data displayed in interactive charts and tables. Choose between the Command-Line Method for step-by-step terminal instructions or the HTML Interface Method for a user-friendly button-based experience.
 
 #### Prerequisites (What You Need First)
 Before starting, make sure you have:
@@ -215,7 +164,9 @@ Before starting, make sure you have:
 - Internet connection (needed for weather and solar data APIs)
 - Your project folder open in VS Code or terminal
 
-#### Step 1: Prepare Your Environment
+#### Command-Line Method
+
+##### Step 1: Prepare Your Environment
 
 1. **Check if PostgreSQL is running**:
    - Open Command Prompt: Press `Win + R`, type `cmd`, press Enter
@@ -227,7 +178,7 @@ Before starting, make sure you have:
    - In your project folder, run: `python db/test_connection.py`
    - You should see existing sensor data in a table format
 
-#### Step 2: Test Manual Data Collection
+##### Step 2: Test Manual Data Collection
 
 Manual collection lets you trigger data ingestion instantly via a web API call.
 
@@ -266,7 +217,7 @@ Manual collection lets you trigger data ingestion instantly via a web API call.
    - You should see new rows added to your sensor data table
    - Look for recent timestamps in the data
 
-#### Step 3: Test Automatic Data Collection (Optional)
+##### Step 3: Test Automatic Data Collection (Optional)
 
 Automatic collection runs daily after 8 PM, but you can test the function directly.
 
@@ -279,7 +230,7 @@ Automatic collection runs daily after 8 PM, but you can test the function direct
    - **Before 8 PM**: `{'success': True, 'message': 'Not yet 8 PM - skipping scheduled ingestion', 'total_rows': 0}`
    - **After 8 PM**: The system will collect historical data and show rows added
 
-#### Step 4: View Your Data in the Web Interface
+##### Step 4: View Your Data in the Web Interface
 
 Now that you've collected data, let's see it in the web dashboard!
 
@@ -317,7 +268,7 @@ Now that you've collected data, let's see it in the web dashboard!
    - This creates an HTML file you can open in any browser
    - Shows the same data in a formatted table
 
-#### Step 5: Check Logs and Verify Everything Worked
+##### Step 5: Check Logs and Verify Everything Worked
 
 1. **View the ingestion logs**:
    - Open `logs/ingestion.log` in your project folder
@@ -332,6 +283,90 @@ Now that you've collected data, let's see it in the web dashboard!
    ```
    - Confirm all your new data is there
    - Count should be higher than before you started
+
+#### HTML Interface Method
+
+For a more user-friendly experience, start directly with the interactive HTML interface that provides clickable buttons for all Phase 8 steps and routines.
+
+##### Prerequisites
+- Python environment with all packages installed (`pip install -r requirements.txt`)
+- Internet connection for API data
+- PostgreSQL database (will be started via HTML interface)
+
+##### Step 1: Launch the HTML Interface
+
+1. **Navigate to the web folder**:
+   ```bash
+   cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5\web"
+   ```
+
+2. **Start the Flask web server and open HTML interface**:
+   ```bash
+   python ingestion_trigger.py
+   ```
+   - The server will start and automatically open your default web browser to `http://localhost:5000/static/dashboard.html`
+   - You should see: "Running on http://0.0.0.0:5000"
+   - Keep this window open
+
+##### Step 2: Use the Interactive Buttons
+
+The HTML page provides buttons for each Phase 8 routine with function descriptions:
+
+**System Setup Buttons:**
+- **Start Flask Web Server**: Launches the Flask server (already running when you open the page)
+- **Check PostgreSQL Status**: Verifies if PostgreSQL database server is running
+- **Verify DB Connection**: Tests database connectivity and shows existing data
+
+**Data Collection Buttons:**
+- **Trigger Data Ingestion**: Manually collects sensor data from APIs (weather + solar)
+- **Test Automatic Ingestion**: Simulates scheduled data collection (time-based)
+
+**Visualization Buttons:**
+- **Start Streamlit Dashboard**: Launches interactive charts and analytics dashboard
+- **View HTML Table**: Generates and displays data in HTML table format
+
+**Monitoring Buttons:**
+- **View Ingestion Logs**: Shows recent log entries with timestamps and status
+- **Final DB Check**: Performs final verification of data storage
+
+##### Step 3: Monitor Routine Completion
+
+Each button provides real-time feedback on routine completion:
+
+- **Success Indicators**: Green alerts showing "Success!" with details like rows added, data fetched, etc.
+- **Progress Messages**: Loading spinners and "Processing..." messages during execution
+- **Error Handling**: Red alerts for failures with specific error messages
+- **Status Updates**: Real-time updates on data collection progress, API calls, and database operations
+
+##### Step 4: Complete the Full Phase 8 Routine
+
+Follow this sequence for complete Phase 8 testing:
+
+1. **Environment Setup**:
+   - Click "Check PostgreSQL Status" → Should show "running"
+   - Click "Verify DB Connection" → Should display existing sensor data table
+
+2. **Data Collection**:
+   - Click "Trigger Data Ingestion" → Collects 10 weather + 10 solar data points
+   - Click "Test Automatic Ingestion" → Tests scheduled collection logic
+
+3. **Data Visualization**:
+   - Click "Start Streamlit Dashboard" → Opens interactive charts at http://localhost:8501
+   - Click "View HTML Table" → Shows data in formatted HTML table
+
+4. **Verification**:
+   - Click "View Ingestion Logs" → Check for successful data collection entries
+   - Click "Final DB Check" → Confirm new data rows were added to database
+
+##### Step 5: Error Logs and Troubleshooting
+
+The bottom of the HTML page includes 5 rows for error logs and troubleshooting:
+
+1. **Real-time Error Display**: Errors appear immediately below buttons with red alerts
+2. **Log Viewer**: "View Ingestion Logs" button shows detailed server logs
+3. **Status Messages**: Each button shows success/failure status with details
+4. **Network Issues**: API failures and connection problems are logged
+5. **Database Errors**: Connection failures and query errors are displayed
 
 #### What You Should See in the Web Interface
 
@@ -350,6 +385,13 @@ If something doesn't work:
 - **"Import error"**: Run `pip install -r requirements.txt`
 - **No data collected**: Check your internet connection and API keys in `config.py`
 - **Dashboard won't open**: Make sure no other programs are using port 8501
+
+**Common Issues and Solutions:**
+- **"Flask server not responding"**: Restart `python ingestion_trigger.py`
+- **"PostgreSQL not running"**: Use "Check PostgreSQL Status" button to diagnose
+- **"API key errors"**: Check `config.py` for valid API keys
+- **"No data collected"**: Verify internet connection and API limits
+- **"Streamlit won't start"**: Check if port 8501 is available
 
 #### Quick Reference Commands
 
@@ -373,99 +415,6 @@ python db/test_connection.py
 # Test automatic collection
 python -c "from web.ingestion_trigger import perform_continuous_ingestion; print(perform_continuous_ingestion())"
 ```
-
-### Alternative: Use HTML Interface for Phase 8 Steps
-
-For a more user-friendly experience, start directly with the interactive HTML interface that provides clickable buttons for all Phase 8 steps and routines.
-
-#### Prerequisites
-- Python environment with all packages installed (`pip install -r requirements.txt`)
-- Internet connection for API data
-- PostgreSQL database (will be started via HTML interface)
-
-#### Step 1: Launch the HTML Interface
-
-1. **Navigate to the web folder**:
-   ```bash
-   cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5\web"
-   ```
-
-2. **Start the Flask web server and open HTML interface**:
-   ```bash
-   python ingestion_trigger.py
-   ```
-   - The server will start and automatically open your default web browser to `http://localhost:5000/static/dashboard.html`
-   - You should see: "Running on http://0.0.0.0:5000"
-   - Keep this window open
-
-#### Step 2: Use the Interactive Buttons
-
-The HTML page provides buttons for each Phase 8 routine with function descriptions:
-
-**System Setup Buttons:**
-- **Start Flask Web Server**: Launches the Flask server (already running when you open the page)
-- **Check PostgreSQL Status**: Verifies if PostgreSQL database server is running
-- **Verify DB Connection**: Tests database connectivity and shows existing data
-
-**Data Collection Buttons:**
-- **Trigger Data Ingestion**: Manually collects sensor data from APIs (weather + solar)
-- **Test Automatic Ingestion**: Simulates scheduled data collection (time-based)
-
-**Visualization Buttons:**
-- **Start Streamlit Dashboard**: Launches interactive charts and analytics dashboard
-- **View HTML Table**: Generates and displays data in HTML table format
-
-**Monitoring Buttons:**
-- **View Ingestion Logs**: Shows recent log entries with timestamps and status
-- **Final DB Check**: Performs final verification of data storage
-
-#### Step 3: Monitor Routine Completion
-
-Each button provides real-time feedback on routine completion:
-
-- **Success Indicators**: Green alerts showing "Success!" with details like rows added, data fetched, etc.
-- **Progress Messages**: Loading spinners and "Processing..." messages during execution
-- **Error Handling**: Red alerts for failures with specific error messages
-- **Status Updates**: Real-time updates on data collection progress, API calls, and database operations
-
-#### Step 4: Complete the Full Phase 8 Routine
-
-Follow this sequence for complete Phase 8 testing:
-
-1. **Environment Setup**:
-   - Click "Check PostgreSQL Status" → Should show "running"
-   - Click "Verify DB Connection" → Should display existing sensor data table
-
-2. **Data Collection**:
-   - Click "Trigger Data Ingestion" → Collects 10 weather + 10 solar data points
-   - Click "Test Automatic Ingestion" → Tests scheduled collection logic
-
-3. **Data Visualization**:
-   - Click "Start Streamlit Dashboard" → Opens interactive charts at http://localhost:8501
-   - Click "View HTML Table" → Shows data in formatted HTML table
-
-4. **Verification**:
-   - Click "View Ingestion Logs" → Check for successful data collection entries
-   - Click "Final DB Check" → Confirm new data rows were added to database
-
-#### Step 5: Error Logs and Troubleshooting
-
-The bottom of the HTML page includes 5 rows for error logs and troubleshooting:
-
-1. **Real-time Error Display**: Errors appear immediately below buttons with red alerts
-2. **Log Viewer**: "View Ingestion Logs" button shows detailed server logs
-3. **Status Messages**: Each button shows success/failure status with details
-4. **Network Issues**: API failures and connection problems are logged
-5. **Database Errors**: Connection failures and query errors are displayed
-
-**Common Issues and Solutions:**
-- **"Flask server not responding"**: Restart `python ingestion_trigger.py`
-- **"PostgreSQL not running"**: Use "Check PostgreSQL Status" button to diagnose
-- **"API key errors"**: Check `config.py` for valid API keys
-- **"No data collected"**: Verify internet connection and API limits
-- **"Streamlit won't start"**: Check if port 8501 is available
-
-This HTML interface provides a complete, self-contained Phase 8 testing environment with visual feedback and error handling!
 
 This complete guide takes you from setting up the environment to collecting data and viewing beautiful charts in your web browser. The Phase 8 system automatically combines simulated sensor data with real weather and solar data, giving you a comprehensive view of your renewable energy system's performance!
 

@@ -1,0 +1,5 @@
+2026-01-27 19:39:07,586 [INFO] Rows before ingestion: 15
+2026-01-27 19:39:07,599 [INFO] Text file ingestion complete.
+2026-01-27 19:39:07,602 [INFO] CSV ingestion complete.
+2026-01-27 19:39:07,603 [INFO] Rows after ingestion: 15
+2026-01-27 19:39:07,603 [INFO] New rows added: 0

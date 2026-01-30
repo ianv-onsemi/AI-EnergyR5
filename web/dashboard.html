@@ -33,10 +33,13 @@
     </style>
 </head>
 <body>
-    <h2>Table-1: Verify Sim</h2>
+    <h2>Table-1: Sim Data</h2>
     <p>This section displays simulated sensor data for verification purposes, loaded from collect1.txt.</p>
     <div id="simTimestamp" class="mt-2 mb-2" style="font-size: 0.9em; color: #666;"></div>
     <div class="mb-3">
+        <button id="fetchDatabaseBtn" class="btn btn-success btn-sm me-2" onclick="fetchDatabase()">
+            <i class="fas fa-database"></i> Fetch Database
+        </button>
         <button id="loadLatestBtn" class="btn btn-primary btn-sm me-2" onclick="loadLatestData()">
             <i class="fas fa-clock"></i> Latest 10 Rows
         </button>
@@ -65,9 +68,13 @@
         </tbody>
     </table>
 
-    <h2>Table-2: Live Weather Data (Step 2.1 - OpenWeather API Integration)</h2>
+    <h2>Table-2: OpenWeather API</h2>
     <p>This section displays real-time weather data fetched from OpenWeather API, including temperature, humidity, and wind speed. Data is updated when the ingestion button is triggered.</p>
+    <div id="weatherTimestamp" class="mt-2 mb-2" style="font-size: 0.9em; color: #666;"></div>
     <div class="mb-3">
+        <button id="fetchWeatherDatabaseBtn" class="btn btn-success btn-sm me-2" onclick="fetchWeatherDatabase()">
+            <i class="fas fa-database"></i> Fetch Database
+        </button>
         <button id="loadWeatherLatestBtn" class="btn btn-primary btn-sm me-2" onclick="loadWeatherLatestData()">
             <i class="fas fa-clock"></i> Latest 10 Rows
         </button>
@@ -99,7 +106,7 @@
         </tbody>
     </table>
 
-    <h2>Table-3: NASA POWER Solar Irradiance Data (Step 2.2 - NASA POWER API Integration)</h2>
+    <h2>Table-3: NASA-Power API</h2>
     <p>This section displays real-time solar irradiance data fetched from NASA POWER API, including 10 data points from the past 2 days. Data is updated when the ingestion button is triggered.</p>
     <table id="nasaPowerTable">
         <thead>
@@ -791,6 +798,104 @@
             } catch (error) {
                 tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #666;">Error loading NASA Power data</td></tr>';
                 logError('NASA Power Data Loading', 'Load Error', error.message, 'Error');
+            }
+        }
+
+        async function fetchDatabase() {
+            const btn = document.getElementById('fetchDatabaseBtn');
+            const statusDiv = document.getElementById('simTimestamp');
+            const tableBody = document.getElementById('simTableBody');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
+            statusDiv.innerHTML = '<strong>Fetching sim data from database...</strong>';
+
+            try {
+                const response = await fetch('/fetch_sim_data_from_db');
+                const result = await response.json();
+
+                if (result.success && result.data && result.data.length > 0) {
+                    // Display summary info and timestamp
+                    const currentTime = new Date().toLocaleString();
+                    let summaryHtml = '';
+
+                    if (result.summary) {
+                        summaryHtml = `
+                            <div style="margin-bottom: 10px; padding: 10px; background-color: #f0f8ff; border-radius: 5px; border: 1px solid #add8e6;">
+                                <strong>Summary Info:</strong><br>
+                                Total Records: ${result.summary.total_rows}<br>
+                                Time Range: ${result.summary.time_range}<br>
+                                Temperature: Avg=${result.summary.temperature.avg}°C, Min=${result.summary.temperature.min}°C, Max=${result.summary.temperature.max}°C<br>
+                                Humidity: Avg=${result.summary.humidity.avg}%, Min=${result.summary.humidity.min}%, Max=${result.summary.humidity.max}%<br>
+                                Irradiance: Avg=${result.summary.irradiance.avg} W/m², Min=${result.summary.irradiance.min} W/m², Max=${result.summary.irradiance.max} W/m²<br>
+                                Wind Speed: Avg=${result.summary.wind_speed.avg} m/s, Min=${result.summary.wind_speed.min} m/s, Max=${result.summary.wind_speed.max} m/s
+                            </div>
+                        `;
+                    }
+
+                    statusDiv.innerHTML = `${summaryHtml}<strong>Sim data fetched from database:</strong> ${result.rows_fetched} rows (Last updated: ${currentTime})<br><em>collect1.txt updated. Use other buttons to view data in table.</em>`;
+
+                    console.log('Sim data fetched from database and collect1.txt updated');
+                } else {
+                    statusDiv.innerHTML = `<strong>Error:</strong> ${result.error || 'No sim data found in database'}`;
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No sim data found in database</td></tr>';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<strong>Network Error:</strong> ${error.message}`;
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">Error fetching data from database</td></tr>';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-database"></i> Fetch Database';
+            }
+        }
+
+        async function fetchWeatherDatabase() {
+            const btn = document.getElementById('fetchWeatherDatabaseBtn');
+            const statusDiv = document.getElementById('weatherTimestamp');
+            const tableBody = document.getElementById('weatherTableBody');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
+            statusDiv.innerHTML = '<strong>Fetching weather data from database...</strong>';
+
+            try {
+                const response = await fetch('/fetch_weather_data_from_db');
+                const result = await response.json();
+
+                if (result.success && result.data && result.data.length > 0) {
+                    // Display summary info and timestamp
+                    const currentTime = new Date().toLocaleString();
+                    let summaryHtml = '';
+
+                    if (result.summary) {
+                        summaryHtml = `
+                            <div style="margin-bottom: 10px; padding: 10px; background-color: #f0f8ff; border-radius: 5px; border: 1px solid #add8e6;">
+                                <strong>Summary Info:</strong><br>
+                                Total Records: ${result.summary.total_rows}<br>
+                                Time Range: ${result.summary.time_range}<br>
+                                Temperature: Avg=${result.summary.temperature.avg}°C, Min=${result.summary.temperature.min}°C, Max=${result.summary.temperature.max}°C<br>
+                                Humidity: Avg=${result.summary.humidity.avg}%, Min=${result.summary.humidity.min}%, Max=${result.summary.humidity.max}%<br>
+                                Wind Speed: Avg=${result.summary.wind_speed.avg} m/s, Min=${result.summary.wind_speed.min} m/s, Max=${result.summary.wind_speed.max} m/s
+                            </div>
+                        `;
+                    }
+
+                    statusDiv.innerHTML = `${summaryHtml}<strong>Weather data fetched from database:</strong> ${result.rows_fetched} rows (Last updated: ${currentTime})`;
+
+                    // Load data from updated collect2.txt file and populate table
+                    await loadWeatherLatestData();
+
+                    console.log('Weather data fetched from database and displayed in table');
+                } else {
+                    statusDiv.innerHTML = `<strong>Error:</strong> ${result.error || 'No weather data found in database'}`;
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No weather data found in database</td></tr>';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<strong>Network Error:</strong> ${error.message}`;
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">Error fetching data from database</td></tr>';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-database"></i> Fetch Database';
             }
         }
 

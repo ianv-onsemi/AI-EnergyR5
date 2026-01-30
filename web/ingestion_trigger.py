@@ -353,6 +353,255 @@ def get_weather_data_from_db():
             'error': str(e)
         }), 500
 
+def get_sim_summary():
+    """Get summary statistics for sim data"""
+    try:
+        conn = get_connection()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT
+                    COUNT(*) as total_rows,
+                    MIN(timestamp) as earliest_timestamp,
+                    MAX(timestamp) as latest_timestamp,
+                    ROUND(AVG(temperature)::numeric, 2) as avg_temperature,
+                    MIN(temperature) as min_temperature,
+                    MAX(temperature) as max_temperature,
+                    ROUND(AVG(humidity)::numeric, 2) as avg_humidity,
+                    MIN(humidity) as min_humidity,
+                    MAX(humidity) as max_humidity,
+                    ROUND(AVG(irradiance)::numeric, 2) as avg_irradiance,
+                    MIN(irradiance) as min_irradiance,
+                    MAX(irradiance) as max_irradiance,
+                    ROUND(AVG(wind_speed)::numeric, 2) as avg_wind_speed,
+                    MIN(wind_speed) as min_wind_speed,
+                    MAX(wind_speed) as max_wind_speed
+                FROM sensor_data
+                WHERE source = 'sim'
+            """)
+            result = cur.fetchone()
+        conn.close()
+
+        if result and result[0] > 0:  # Check if there are any rows
+            return {
+                'total_rows': result[0],
+                'time_range': f"{result[1].strftime('%Y-%m-%d %H:%M:%S') if result[1] else 'N/A'} to {result[2].strftime('%Y-%m-%d %H:%M:%S') if result[2] else 'N/A'}",
+                'temperature': {
+                    'avg': float(result[3]) if result[3] else 0.0,
+                    'min': float(result[4]) if result[4] else 0.0,
+                    'max': float(result[5]) if result[5] else 0.0
+                },
+                'humidity': {
+                    'avg': float(result[6]) if result[6] else 0.0,
+                    'min': float(result[7]) if result[7] else 0.0,
+                    'max': float(result[8]) if result[8] else 0.0
+                },
+                'irradiance': {
+                    'avg': float(result[9]) if result[9] else 0.0,
+                    'min': float(result[10]) if result[10] else 0.0,
+                    'max': float(result[11]) if result[11] else 0.0
+                },
+                'wind_speed': {
+                    'avg': float(result[12]) if result[12] else 0.0,
+                    'min': float(result[13]) if result[13] else 0.0,
+                    'max': float(result[14]) if result[14] else 0.0
+                }
+            }
+        else:
+            return None
+    except Exception as e:
+        logger.error(f"Failed to get sim summary: {e}")
+        return None
+
+def get_weather_summary():
+    """Get summary statistics for weather data (non-sim sources)"""
+    try:
+        conn = get_connection()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT
+                    COUNT(*) as total_rows,
+                    MIN(timestamp) as earliest_timestamp,
+                    MAX(timestamp) as latest_timestamp,
+                    ROUND(AVG(temperature)::numeric, 2) as avg_temperature,
+                    MIN(temperature) as min_temperature,
+                    MAX(temperature) as max_temperature,
+                    ROUND(AVG(humidity)::numeric, 2) as avg_humidity,
+                    MIN(humidity) as min_humidity,
+                    MAX(humidity) as max_humidity,
+                    ROUND(AVG(wind_speed)::numeric, 2) as avg_wind_speed,
+                    MIN(wind_speed) as min_wind_speed,
+                    MAX(wind_speed) as max_wind_speed
+                FROM sensor_data
+                WHERE source != 'sim' AND temperature IS NOT NULL
+            """)
+            result = cur.fetchone()
+        conn.close()
+
+        if result and result[0] > 0:  # Check if there are any rows
+            return {
+                'total_rows': result[0],
+                'time_range': f"{result[1].strftime('%Y-%m-%d %H:%M:%S') if result[1] else 'N/A'} to {result[2].strftime('%Y-%m-%d %H:%M:%S') if result[2] else 'N/A'}",
+                'temperature': {
+                    'avg': float(result[3]) if result[3] else 0.0,
+                    'min': float(result[4]) if result[4] else 0.0,
+                    'max': float(result[5]) if result[5] else 0.0
+                },
+                'humidity': {
+                    'avg': float(result[6]) if result[6] else 0.0,
+                    'min': float(result[7]) if result[7] else 0.0,
+                    'max': float(result[8]) if result[8] else 0.0
+                },
+                'wind_speed': {
+                    'avg': float(result[9]) if result[9] else 0.0,
+                    'min': float(result[10]) if result[10] else 0.0,
+                    'max': float(result[11]) if result[11] else 0.0
+                }
+            }
+        else:
+            return None
+    except Exception as e:
+        logger.error(f"Failed to get weather summary: {e}")
+        return None
+
+@app.route('/fetch_sim_data_from_db', methods=['GET'])
+def fetch_sim_data_from_db():
+    """Fetch sim data from database and update collect1.txt"""
+    try:
+        logger.info("Fetching sim data from database")
+
+        conn = get_connection()
+        with conn.cursor() as cur:
+            # Get ALL sim data entries
+            cur.execute("""
+                SELECT timestamp, temperature, humidity, irradiance, wind_speed
+                FROM sensor_data
+                WHERE source = 'sim'
+                ORDER BY timestamp DESC
+            """)
+            rows = cur.fetchall()
+        conn.close()
+
+        if not rows:
+            return jsonify({
+                'success': False,
+                'error': 'No sim data found in database'
+            }), 404
+
+        # Format data for JSON response
+        sim_data = []
+        for row in rows:
+            sim_data.append({
+                'timestamp': row[0].strftime('%Y-%m-%d %H:%M:%S') if row[0] else '',
+                'temperature': float(row[1]) if row[1] else 0.0,
+                'humidity': float(row[2]) if row[2] else 0.0,
+                'irradiance': float(row[3]) if row[3] else 0.0,
+                'wind_speed': float(row[4]) if row[4] else 0.0
+            })
+
+        # Get summary information
+        summary = get_sim_summary()
+
+        # Update collect1.txt with the fetched data
+        data_file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'collect1.txt')
+        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        with open(data_file_path, 'w') as f:
+            f.write(f'# Data collection last updated: {current_timestamp}\n')
+            if summary:
+                f.write(f'# Summary: sim={summary["total_rows"]}\n')
+            f.write('[sim]\n')
+            f.write('timestamp,temperature,humidity,irradiance,wind_speed\n')
+            for row in rows:
+                timestamp_str = row[0].strftime('%Y-%m-%d %H:%M:%S') if row[0] else current_timestamp
+                f.write(f'{timestamp_str},{row[1] or 0.0},{row[2] or 0.0},{row[3] or 0.0},{row[4] or 0.0}\n')
+
+        logger.info(f"Sim data fetched and collect1.txt updated: {len(rows)} rows")
+
+        return jsonify({
+            'success': True,
+            'rows_fetched': len(rows),
+            'data': sim_data,
+            'summary': summary,
+            'message': f'Sim data fetched and collect1.txt updated with {len(rows)} rows'
+        })
+
+    except Exception as e:
+        logger.error(f"Failed to fetch sim data from database: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/fetch_weather_data_from_db', methods=['GET'])
+def fetch_weather_data_from_db():
+    """Fetch weather data from database and update collect2.txt"""
+    try:
+        logger.info("Fetching weather data from database")
+
+        conn = get_connection()
+        with conn.cursor() as cur:
+            # Get the 10 most recent weather data entries (non-sim sources)
+            cur.execute("""
+                SELECT timestamp, temperature, humidity, wind_speed, source
+                FROM sensor_data
+                WHERE source != 'sim' AND temperature IS NOT NULL
+                ORDER BY timestamp DESC
+                LIMIT 10
+            """)
+            rows = cur.fetchall()
+        conn.close()
+
+        if not rows:
+            return jsonify({
+                'success': False,
+                'error': 'No weather data found in database'
+            }), 404
+
+        # Format data for JSON response
+        weather_data = []
+        for row in rows:
+            weather_data.append({
+                'timestamp': row[0].strftime('%Y-%m-%d %H:%M:%S') if row[0] else '',
+                'temperature': float(row[1]) if row[1] else 0.0,
+                'humidity': float(row[2]) if row[2] else 0.0,
+                'wind_speed': float(row[3]) if row[3] else 0.0,
+                'source': row[4] if row[4] else 'Database'
+            })
+
+        # Get summary information
+        summary = get_weather_summary()
+
+        # Update collect2.txt with the fetched data
+        data_file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'collect2.txt')
+        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        with open(data_file_path, 'w') as f:
+            f.write(f'# Data collection last updated: {current_timestamp}\n')
+            if summary:
+                f.write(f'# Summary: weather={summary["total_rows"]}\n')
+            f.write('[weather]\n')
+            f.write('timestamp,temperature,humidity,wind_speed,source\n')
+            for row in rows:
+                timestamp_str = row[0].strftime('%Y-%m-%d %H:%M:%S') if row[0] else current_timestamp
+                f.write(f'{timestamp_str},{row[1] or 0.0},{row[2] or 0.0},{row[3] or 0.0},{row[4] or "Database"}\n')
+
+        logger.info(f"Weather data fetched and collect2.txt updated: {len(rows)} rows")
+
+        return jsonify({
+            'success': True,
+            'rows_fetched': len(rows),
+            'data': weather_data,
+            'summary': summary,
+            'message': f'Weather data fetched and collect2.txt updated with {len(rows)} rows'
+        })
+
+    except Exception as e:
+        logger.error(f"Failed to fetch weather data from database: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @app.route('/fetch_openweather', methods=['POST'])
 def fetch_openweather():
     """Fetch data from OpenWeather API"""
