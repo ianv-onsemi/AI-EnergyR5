@@ -413,7 +413,7 @@ def get_sim_summary():
         return None
 
 def get_weather_summary():
-    """Get summary statistics for weather data (non-sim sources)"""
+    """Get summary statistics for weather data (non-sim sources including NULL)"""
     try:
         conn = get_connection()
         with conn.cursor() as cur:
@@ -428,11 +428,14 @@ def get_weather_summary():
                     ROUND(AVG(humidity)::numeric, 2) as avg_humidity,
                     MIN(humidity) as min_humidity,
                     MAX(humidity) as max_humidity,
+                    ROUND(AVG(irradiance)::numeric, 2) as avg_irradiance,
+                    MIN(irradiance) as min_irradiance,
+                    MAX(irradiance) as max_irradiance,
                     ROUND(AVG(wind_speed)::numeric, 2) as avg_wind_speed,
                     MIN(wind_speed) as min_wind_speed,
                     MAX(wind_speed) as max_wind_speed
                 FROM sensor_data
-                WHERE source != 'sim' AND temperature IS NOT NULL
+                WHERE source != 'sim' OR source IS NULL
             """)
             result = cur.fetchone()
         conn.close()
@@ -451,10 +454,15 @@ def get_weather_summary():
                     'min': float(result[7]) if result[7] else 0.0,
                     'max': float(result[8]) if result[8] else 0.0
                 },
-                'wind_speed': {
+                'irradiance': {
                     'avg': float(result[9]) if result[9] else 0.0,
                     'min': float(result[10]) if result[10] else 0.0,
                     'max': float(result[11]) if result[11] else 0.0
+                },
+                'wind_speed': {
+                    'avg': float(result[12]) if result[12] else 0.0,
+                    'min': float(result[13]) if result[13] else 0.0,
+                    'max': float(result[14]) if result[14] else 0.0
                 }
             }
         else:
@@ -540,11 +548,11 @@ def fetch_weather_data_from_db():
 
         conn = get_connection()
         with conn.cursor() as cur:
-            # Get ALL weather data entries (non-sim sources)
+            # Get ALL weather data entries (non-sim sources including NULL)
             cur.execute("""
                 SELECT timestamp, temperature, humidity, irradiance, wind_speed, source
                 FROM sensor_data
-                WHERE source != 'sim'
+                WHERE source != 'sim' OR source IS NULL
                 ORDER BY timestamp DESC
             """)
             rows = cur.fetchall()

@@ -875,17 +875,15 @@
                                 Time Range: ${result.summary.time_range}<br>
                                 Temperature: Avg=${result.summary.temperature.avg}°C, Min=${result.summary.temperature.min}°C, Max=${result.summary.temperature.max}°C<br>
                                 Humidity: Avg=${result.summary.humidity.avg}%, Min=${result.summary.humidity.min}%, Max=${result.summary.humidity.max}%<br>
+                                Irradiance: Avg=${result.summary.irradiance.avg} W/m², Min=${result.summary.irradiance.min} W/m², Max=${result.summary.irradiance.max} W/m²<br>
                                 Wind Speed: Avg=${result.summary.wind_speed.avg} m/s, Min=${result.summary.wind_speed.min} m/s, Max=${result.summary.wind_speed.max} m/s
                             </div>
                         `;
                     }
 
-                    statusDiv.innerHTML = `${summaryHtml}<strong>Weather data fetched from database:</strong> ${result.rows_fetched} rows (Last updated: ${currentTime})`;
+                    statusDiv.innerHTML = `${summaryHtml}<strong>Weather data fetched from database:</strong> ${result.rows_fetched} rows (Last updated: ${currentTime})<br><em>collect2.txt updated. Use other buttons to view data in table.</em>`;
 
-                    // Load data from updated collect2.txt file and populate table
-                    await loadWeatherLatestData();
-
-                    console.log('Weather data fetched from database and displayed in table');
+                    console.log('Weather data fetched from database and collect2.txt updated');
                 } else {
                     statusDiv.innerHTML = `<strong>Error:</strong> ${result.error || 'No weather data found in database'}`;
                     tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No weather data found in database</td></tr>';

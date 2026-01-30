@@ -22,8 +22,17 @@ This project develops a cross-platform application for predictive maintenance of
 AI-EnergyR5/
 │
 ├── README.md             # Documentation for setup and usage
+├── clean_database.py     # Script to clean database (retain only sim data)
 ├── config.py             # Configuration settings (API keys, database credentials)
+├── create_collectAll.py  # Script to create collectAll data collection
+├── generate_past_data.py # Script to generate historical data
 ├── requirements.txt      # List of Python dependencies
+├── review_openweather_data.py # Script to review OpenWeather data
+├── temp_check_data.py    # Temporary script for data checking
+├── temp_summary.py       # Temporary script for data summary
+├── temp_test_endpoint.py # Temporary script for endpoint testing
+├── update_collect1.py    # Script to update collect1 data
+├── update_collectAll.py  # Script to update collectAll data
 │
 ├── api_wrappers/         # External API integration modules
 │   ├── nasa_power.py     # NASA POWER API wrapper for solar irradiance data
@@ -33,6 +42,7 @@ AI-EnergyR5/
 │   ├── collect1.txt      # Collected data sim
 │   ├── collect2.txt      # Collected data nasapower
 │   ├── collect3.txt      # Collected data openweather
+│   ├── collectAll.txt    # All collected data combined
 │   ├── sensor_data.csv   # CSV file for sensor data
 │   └── sensor_logs.txt   # Plain text sensor log file
 │
@@ -51,7 +61,8 @@ AI-EnergyR5/
 ├── logs/                 # Log files
 │   ├── ingestion.log     # Today's ingestion log
 │   ├── ingestion.log.2026-01-20 # Yesterday's log (auto-rotated)
-│   └── ingestion.log.2026-01-26 # Older log (auto-rotated)
+│   ├── ingestion.log.2026-01-26 # Older log (auto-rotated)
+│   └── ingestion.log.2026-01-27 # Older log (auto-rotated)
 │
 ├── notebooks/            # Jupyter notebooks for demos
 │   └── data_pipeline_demo.py # Step-by-step interactive demo
