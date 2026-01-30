@@ -540,13 +540,12 @@ def fetch_weather_data_from_db():
 
         conn = get_connection()
         with conn.cursor() as cur:
-            # Get the 10 most recent weather data entries (non-sim sources)
+            # Get ALL weather data entries (non-sim sources)
             cur.execute("""
-                SELECT timestamp, temperature, humidity, wind_speed, source
+                SELECT timestamp, temperature, humidity, irradiance, wind_speed, source
                 FROM sensor_data
-                WHERE source != 'sim' AND temperature IS NOT NULL
+                WHERE source != 'sim'
                 ORDER BY timestamp DESC
-                LIMIT 10
             """)
             rows = cur.fetchall()
         conn.close()
@@ -564,8 +563,9 @@ def fetch_weather_data_from_db():
                 'timestamp': row[0].strftime('%Y-%m-%d %H:%M:%S') if row[0] else '',
                 'temperature': float(row[1]) if row[1] else 0.0,
                 'humidity': float(row[2]) if row[2] else 0.0,
-                'wind_speed': float(row[3]) if row[3] else 0.0,
-                'source': row[4] if row[4] else 'Database'
+                'irradiance': float(row[3]) if row[3] else 0.0,
+                'wind_speed': float(row[4]) if row[4] else 0.0,
+                'source': row[5] if row[5] else 'Database'
             })
 
         # Get summary information
@@ -580,10 +580,10 @@ def fetch_weather_data_from_db():
             if summary:
                 f.write(f'# Summary: weather={summary["total_rows"]}\n')
             f.write('[weather]\n')
-            f.write('timestamp,temperature,humidity,wind_speed,source\n')
+            f.write('timestamp,temperature,humidity,irradiance,wind_speed,source\n')
             for row in rows:
                 timestamp_str = row[0].strftime('%Y-%m-%d %H:%M:%S') if row[0] else current_timestamp
-                f.write(f'{timestamp_str},{row[1] or 0.0},{row[2] or 0.0},{row[3] or 0.0},{row[4] or "Database"}\n')
+                f.write(f'{timestamp_str},{row[1] or 0.0},{row[2] or 0.0},{row[3] or 0.0},{row[4] or 0.0},{row[5] or "Database"}\n')
 
         logger.info(f"Weather data fetched and collect2.txt updated: {len(rows)} rows")
 

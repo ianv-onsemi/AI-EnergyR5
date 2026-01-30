@@ -81,8 +81,8 @@
         <button id="loadWeatherTopWindBtn" class="btn btn-info btn-sm me-2" onclick="loadWeatherTopWindSpeed()">
             <i class="fas fa-wind"></i> Top 10 Wind Speed
         </button>
-        <button id="loadWeatherTopTempBtn" class="btn btn-warning btn-sm" onclick="loadWeatherTopTemperature()">
-            <i class="fas fa-sun"></i> Top 10 Temperature
+        <button id="loadWeatherTopIrradianceBtn" class="btn btn-warning btn-sm" onclick="loadWeatherTopIrradiance()">
+            <i class="fas fa-sun"></i> Top 10 Solar Irradiance
         </button>
     </div>
     <div id="weatherDbStatus" class="mt-3" style="display: none;">
@@ -896,6 +896,192 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-database"></i> Fetch Database';
+            }
+        }
+
+        async function loadWeatherDataCollection() {
+            try {
+                const response = await fetch('/data/collect2.txt');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const text = await response.text();
+
+                // Parse the file content
+                const lines = text.split('\n');
+                let currentSection = '';
+                let timestamp = '';
+
+                // Extract timestamp from first line
+                if (lines[0] && lines[0].startsWith('# Data collection last updated:')) {
+                    timestamp = lines[0].replace('# Data collection last updated: ', '');
+                }
+
+                let weatherData = [];
+
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (line.startsWith('[') && line.endsWith(']')) {
+                        currentSection = line.slice(1, -1).toLowerCase().replace(' ', '_');
+                    } else if (line && !line.startsWith('timestamp,') && currentSection === 'weather') {
+                        const parts = line.split(',');
+                        if (parts.length === 6) {
+                            const row = {
+                                timestamp: parts[0],
+                                temperature: parseFloat(parts[1]),
+                                humidity: parseFloat(parts[2]),
+                                irradiance: parseFloat(parts[3]),
+                                wind_speed: parseFloat(parts[4]),
+                                source: parts[5]
+                            };
+                            weatherData.push(row);
+                        }
+                    }
+                }
+
+                return { weather: weatherData, timestamp: timestamp };
+            } catch (error) {
+                console.error('Error loading weather data collection:', error);
+                logError('Weather Data Loading', 'File Load Error', `Failed to load collect2.txt: ${error.message}`, 'Error');
+                return { weather: [], timestamp: '' };
+            }
+        }
+
+        async function loadWeatherLatestData() {
+            const btn = document.getElementById('loadWeatherLatestBtn');
+            const tableBody = document.getElementById('weatherTableBody');
+            const timestampDiv = document.getElementById('weatherTimestamp');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+            try {
+                const dataCollection = await loadWeatherDataCollection();
+                if (dataCollection.weather && dataCollection.weather.length > 0) {
+                    // Display timestamp
+                    if (dataCollection.timestamp) {
+                        timestampDiv.innerHTML = `<strong>Last updated:</strong> ${dataCollection.timestamp}`;
+                    }
+
+                    // Sort weather data by timestamp descending and get the latest 10 rows
+                    const sortedWeatherData = dataCollection.weather.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    const last10Rows = sortedWeatherData.slice(0, 10);
+
+                    // Populate the table
+                    tableBody.innerHTML = last10Rows.map((row, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${row.timestamp}</td>
+                            <td>${row.temperature.toFixed(2)}</td>
+                            <td>${row.humidity.toFixed(2)}</td>
+                            <td>${row.irradiance.toFixed(2)}</td>
+                            <td>${row.wind_speed.toFixed(2)}</td>
+                            <td>${row.source}</td>
+                        </tr>
+                    `).join('');
+
+                    console.log('Latest weather data loaded');
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">No weather data found in file</td></tr>';
+                }
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">Error loading weather data</td></tr>';
+                logError('Weather Data Loading', 'Load Error', error.message, 'Error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-clock"></i> Latest 10 Rows';
+            }
+        }
+
+        async function loadWeatherTopWindSpeed() {
+            const btn = document.getElementById('loadWeatherTopWindBtn');
+            const tableBody = document.getElementById('weatherTableBody');
+            const timestampDiv = document.getElementById('weatherTimestamp');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+            try {
+                const dataCollection = await loadWeatherDataCollection();
+                if (dataCollection.weather && dataCollection.weather.length > 0) {
+                    // Display timestamp
+                    if (dataCollection.timestamp) {
+                        timestampDiv.innerHTML = `<strong>Last updated:</strong> ${dataCollection.timestamp}`;
+                    }
+
+                    // Sort weather data by wind speed descending and get the top 10 rows
+                    const sortedWeatherData = dataCollection.weather.sort((a, b) => b.wind_speed - a.wind_speed);
+                    const top10Rows = sortedWeatherData.slice(0, 10);
+
+                    // Populate the table
+                    tableBody.innerHTML = top10Rows.map((row, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${row.timestamp}</td>
+                            <td>${row.temperature.toFixed(2)}</td>
+                            <td>${row.humidity.toFixed(2)}</td>
+                            <td>${row.irradiance.toFixed(2)}</td>
+                            <td>${row.wind_speed.toFixed(2)}</td>
+                            <td>${row.source}</td>
+                        </tr>
+                    `).join('');
+
+                    console.log('Top wind speed weather data loaded');
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">No weather data found in file</td></tr>';
+                }
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">Error loading weather data</td></tr>';
+                logError('Weather Data Loading', 'Load Error', error.message, 'Error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-wind"></i> Top 10 Wind Speed';
+            }
+        }
+
+        async function loadWeatherTopIrradiance() {
+            const btn = document.getElementById('loadWeatherTopIrradianceBtn');
+            const tableBody = document.getElementById('weatherTableBody');
+            const timestampDiv = document.getElementById('weatherTimestamp');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+            try {
+                const dataCollection = await loadWeatherDataCollection();
+                if (dataCollection.weather && dataCollection.weather.length > 0) {
+                    // Display timestamp
+                    if (dataCollection.timestamp) {
+                        timestampDiv.innerHTML = `<strong>Last updated:</strong> ${dataCollection.timestamp}`;
+                    }
+
+                    // Sort weather data by irradiance descending and get the top 10 rows
+                    const sortedWeatherData = dataCollection.weather.sort((a, b) => b.irradiance - a.irradiance);
+                    const top10Rows = sortedWeatherData.slice(0, 10);
+
+                    // Populate the table
+                    tableBody.innerHTML = top10Rows.map((row, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${row.timestamp}</td>
+                            <td>${row.temperature.toFixed(2)}</td>
+                            <td>${row.humidity.toFixed(2)}</td>
+                            <td>${row.irradiance.toFixed(2)}</td>
+                            <td>${row.wind_speed.toFixed(2)}</td>
+                            <td>${row.source}</td>
+                        </tr>
+                    `).join('');
+
+                    console.log('Top irradiance weather data loaded');
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">No weather data found in file</td></tr>';
+                }
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">Error loading weather data</td></tr>';
+                logError('Weather Data Loading', 'Load Error', error.message, 'Error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sun"></i> Top 10 Solar Irradiance';
             }
         }
 
