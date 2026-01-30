@@ -1,5 +1,5 @@
 # Data collection last updated: 2026-01-29 20:55:17
-# Summary: openweather=19, total=19
+# Summary: openweather=19
 
 [openweather]
 timestamp,temperature,humidity,irradiance,wind_speed
