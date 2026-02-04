@@ -717,85 +717,109 @@ def serve_collect3():
 @app.route('/trigger_ingestion', methods=['POST'])
 def trigger_ingestion():
     """Endpoint to trigger manual data ingestion"""
-    try:
-        logger.info("Manual ingestion triggered")
+    logger.info("Manual ingestion triggered - starting process")
 
-        # Generate simulated sensor data
-        sensor_generated = False
+    try:
+        # Initialize response data
+        response_data = {
+            'success': False,
+            'sensor_generated': False,
+            'weather_fetched': False,
+            'weather_rows_inserted': 0,
+            'solar_fetched': False,
+            'solar_rows_inserted': 0,
+            'ingestion_result': {},
+            'error': None
+        }
+
+        # Step 1: Generate simulated sensor data
+        logger.info("Step 1: Generating simulated sensor data")
         try:
             sensor_data = generate_sensor_data()
-            sensor_generated = True
+            response_data['sensor_generated'] = True
             logger.info("Sensor data generated successfully")
         except Exception as e:
             logger.error(f"Failed to generate sensor data: {e}")
+            response_data['error'] = f"Sensor generation failed: {str(e)}"
+            return jsonify(response_data), 500
 
-        # Fetch weather data from OpenWeather API (10 rows from past 2 days)
-        weather_fetched = False
+        # Step 2: Fetch weather data from OpenWeather API (10 rows)
+        logger.info("Step 2: Fetching weather data from OpenWeather API")
         weather_data_list = []
         try:
-            # Fetch 10 weather data points from past 2 days
             for i in range(10):
+                logger.info(f"Fetching weather data point {i+1}/10")
                 weather_data = fetch_weather_data()
                 if weather_data:
                     weather_data_list.append(weather_data)
-                    weather_fetched = True
                     logger.info(f"Weather data {i+1} fetched successfully")
-                    time.sleep(1)  # Rate limiting
                 else:
                     logger.warning(f"Weather data {i+1} fetch returned None")
-            logger.info(f"Total weather data points fetched: {len(weather_data_list)}")
+                time.sleep(1)  # Rate limiting
+
+            if weather_data_list:
+                response_data['weather_fetched'] = True
+                logger.info(f"Total weather data points fetched: {len(weather_data_list)}")
+            else:
+                logger.warning("No weather data fetched")
         except Exception as e:
             logger.error(f"Failed to fetch weather data: {e}")
+            response_data['error'] = f"Weather fetch failed: {str(e)}"
+            return jsonify(response_data), 500
 
-        # Fetch solar irradiance data from NASA POWER API (10 rows from past 2 days)
-        solar_fetched = False
+        # Step 3: Fetch solar irradiance data from NASA POWER API (10 rows)
+        logger.info("Step 3: Fetching solar irradiance data from NASA POWER API")
         solar_data_list = []
         try:
-            # Fetch 10 solar irradiance data points from past 2 days
             for i in range(10):
+                logger.info(f"Fetching solar irradiance data point {i+1}/10")
                 solar_data = get_solar_irradiance_data()
                 if solar_data:
                     solar_data_list.append(solar_data)
-                    solar_fetched = True
                     logger.info(f"Solar irradiance data {i+1} fetched successfully")
-                    time.sleep(0.5)  # Rate limiting
                 else:
                     logger.warning(f"Solar irradiance data {i+1} fetch returned None")
-            logger.info(f"Total solar irradiance data points fetched: {len(solar_data_list)}")
+                time.sleep(0.5)  # Rate limiting
+
+            if solar_data_list:
+                response_data['solar_fetched'] = True
+                logger.info(f"Total solar irradiance data points fetched: {len(solar_data_list)}")
+            else:
+                logger.warning("No solar irradiance data fetched")
         except Exception as e:
             logger.error(f"Failed to fetch solar irradiance data: {e}")
+            response_data['error'] = f"Solar fetch failed: {str(e)}"
+            return jsonify(response_data), 500
 
-        # Run database ingestion
-        ingestion_result = None
+        # Step 4: Run database ingestion
+        logger.info("Step 4: Running database ingestion")
         try:
             ingestion_result = run_ingestion()
+            response_data['ingestion_result'] = ingestion_result or {}
             logger.info("Database ingestion completed")
         except Exception as e:
             logger.error(f"Database ingestion failed: {e}")
-            return jsonify({
-                'success': False,
-                'error': f'Database ingestion failed: {str(e)}',
-                'sensor_generated': sensor_generated,
-                'weather_fetched': weather_fetched,
-                'solar_fetched': solar_fetched
-            }), 500
+            response_data['error'] = f"Database ingestion failed: {str(e)}"
+            return jsonify(response_data), 500
 
-        # Insert weather data if fetched (all 10 rows)
-        weather_rows_inserted = 0
-        if weather_fetched and weather_data_list:
+        # Step 5: Insert weather data if fetched
+        logger.info("Step 5: Inserting weather data into database")
+        if response_data['weather_fetched'] and weather_data_list:
             try:
                 conn = get_connection()
                 for weather_data in weather_data_list:
                     insert_weather_data(conn, weather_data)
-                    weather_rows_inserted += 1
+                    response_data['weather_rows_inserted'] += 1
                 conn.close()
-                logger.info(f"Weather data inserted into database: {weather_rows_inserted} rows")
+                logger.info(f"Weather data inserted into database: {response_data['weather_rows_inserted']} rows")
             except Exception as e:
                 logger.error(f"Failed to insert weather data: {e}")
+                response_data['error'] = f"Weather data insertion failed: {str(e)}"
+                return jsonify(response_data), 500
 
-        # Insert solar data if fetched (all 10 rows, merge with weather data where possible)
-        solar_rows_inserted = 0
-        if solar_fetched and solar_data_list:
+        # Step 6: Insert solar data if fetched
+        logger.info("Step 6: Inserting solar irradiance data into database")
+        if response_data['solar_fetched'] and solar_data_list:
             try:
                 conn = get_connection()
                 for i, solar_data in enumerate(solar_data_list):
@@ -810,30 +834,30 @@ def trigger_ingestion():
                         combined_data = (timestamp, 0.0, 0.0, irradiance, 0.0)
 
                     insert_weather_data(conn, combined_data)
-                    solar_rows_inserted += 1
+                    response_data['solar_rows_inserted'] += 1
                 conn.close()
-                logger.info(f"Solar irradiance data inserted into database: {solar_rows_inserted} rows")
+                logger.info(f"Solar irradiance data inserted into database: {response_data['solar_rows_inserted']} rows")
             except Exception as e:
                 logger.error(f"Failed to insert solar irradiance data: {e}")
+                response_data['error'] = f"Solar data insertion failed: {str(e)}"
+                return jsonify(response_data), 500
 
-        return jsonify({
-            'success': True,
-            'sensor_generated': sensor_generated,
-            'weather_fetched': weather_fetched,
-            'weather_rows_inserted': weather_rows_inserted,
-            'solar_fetched': solar_fetched,
-            'solar_rows_inserted': solar_rows_inserted,
-            'ingestion_result': ingestion_result or {}
-        })
+        # Success response
+        response_data['success'] = True
+        logger.info("Manual ingestion completed successfully")
+        return jsonify(response_data)
 
     except Exception as e:
-        logger.error(f"Ingestion trigger failed: {e}")
+        logger.error(f"Ingestion trigger failed with unexpected error: {e}")
         return jsonify({
             'success': False,
-            'error': str(e),
+            'error': f"Unexpected error: {str(e)}",
             'sensor_generated': False,
             'weather_fetched': False,
-            'solar_fetched': False
+            'weather_rows_inserted': 0,
+            'solar_fetched': False,
+            'solar_rows_inserted': 0,
+            'ingestion_result': {}
         }), 500
 
 if __name__ == '__main__':

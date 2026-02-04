@@ -6,13 +6,14 @@ CREATE DATABASE energy_db;
 
 -- Create sensor_data table for time-series sensor readings
 CREATE TABLE sensor_data (
-    timestamp TIMESTAMP PRIMARY KEY,
+    rn SERIAL PRIMARY KEY,    -- Row number
+    timestamp TIMESTAMP,
     temperature DECIMAL(5,2),
     humidity DECIMAL(5,2),
-    irradiance DECIMAL(7,2),
     wind_speed DECIMAL(5,2),
-    wind_power_density DECIMAL(7,2),  -- Wind power density in W/m²
-    solar_energy_yield DECIMAL(7,2),  -- Solar energy yield in kWh/m²/day
+    cloudiness DECIMAL(5,2),  -- Cloudiness percentage (blank if not applicable)
+    uv_index DECIMAL(5,2),    -- UV Index (blank if not applicable)
+    irradiance DECIMAL(7,2),
     source VARCHAR(50)
 );
 

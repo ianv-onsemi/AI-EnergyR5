@@ -315,9 +315,10 @@ For a more user-friendly experience, start directly with the interactive HTML in
    ```bash
    python ingestion_trigger.py
    ```
-   - The server will start and automatically open your default web browser to `http://localhost:5000/static/dashboard.html`
+   - The server will start and run on `http://0.0.0.0:5000`
    - You should see: "Running on http://0.0.0.0:5000"
    - Keep this window open
+   - Access the dashboard at: `http://10.243.119.221:5000` (or `http://localhost:5000` if running locally)
 
 ##### Step 2: Use the Interactive Buttons
 
@@ -493,6 +494,21 @@ The project is organized into phases for systematic development. Below is the la
 - Optional: Add other APIs (NOAA, Meteostat, etc.) ⏳ Pending
 - Normalize and store web-sensor data into sensor_data table ✅ Done
 - Combine local sensor + web API data for richer analytics ⏳ Pending
+
+#### Database Table Model
+The `sensor_data` table stores web sensor data with the following 9 headers:
+
+| Header Label | Data Type | Description | Source API |
+|--------------|-----------|-------------|------------|
+| Row Number | SERIAL | Auto-incrementing row identifier | Database |
+| Timestamp | TIMESTAMP | Date and time of data collection | System/API |
+| Temperature (°C) | DECIMAL(5,2) | Air temperature in Celsius | OpenWeather |
+| Humidity (%) | DECIMAL(5,2) | Relative humidity percentage | OpenWeather |
+| Wind Speed (m/s) | DECIMAL(5,2) | Wind speed in meters per second | OpenWeather |
+| Cloudiness (%) | DECIMAL(5,2) | Cloud cover percentage | OpenWeather |
+| UV Index | DECIMAL(3,1) | Ultraviolet index value | OpenWeather |
+| Irradiance (W/m²) | DECIMAL(7,2) | Solar irradiance in watts per square meter | NASA POWER |
+| Source | VARCHAR(50) | Data source identifier (openweather/nasa_power) | System |
 
 ### Phase 10: Predictive Analytics ⏳ Pending
 - Calculate averages/min/max/moving averages
