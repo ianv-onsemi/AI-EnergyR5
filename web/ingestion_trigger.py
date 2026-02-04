@@ -282,16 +282,7 @@ def test_automatic_ingestion():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/start_streamlit', methods=['POST'])
-def start_streamlit():
-    """Start Streamlit dashboard in background"""
-    try:
-        # Start Streamlit in background
-        subprocess.Popen([sys.executable, "-m", "streamlit", "run", "web/dashboard.py"],
-                        cwd=os.path.dirname(__file__), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        return jsonify({'success': True, 'message': 'Streamlit dashboard started. Check your browser at http://localhost:8501'})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @app.route('/view_logs', methods=['GET'])
 def view_logs():

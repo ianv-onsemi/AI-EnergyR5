@@ -66,7 +66,7 @@
         </thead>
         <tbody id="simTableBody">
             <tr>
-                <td colspan="5" style="text-align: center; color: #666;">Click "Load Sim Data" to load simulated sensor data from file</td>
+                <td colspan="9" style="text-align: center; color: #666;">Click "Load Sim Data" to load simulated sensor data from file</td>
             </tr>
         </tbody>
     </table>
@@ -107,7 +107,7 @@
         </thead>
         <tbody id="weatherTableBody">
             <tr>
-                <td colspan="6" style="text-align: center; color: #666;">Click "Trigger Data Ingestion" to fetch live weather data or "Load Weather Data from Database" to view stored data</td>
+                <td colspan="9" style="text-align: center; color: #666;">Click "Trigger Data Ingestion" to fetch live weather data or "Load Weather Data from Database" to view stored data</td>
             </tr>
         </tbody>
     </table>
@@ -200,15 +200,7 @@
 
                 <div class="step-section mb-4">
                     <h4>Step 4: View Your Data in the Web Interface</h4>
-                    <button id="startStreamlitBtn" class="btn btn-success btn-sm me-2" onclick="startStreamlit()">
-                        <i class="fas fa-chart-line"></i> Start Streamlit Dashboard
-                    </button>
-                    <button id="viewHtmlTableBtn" class="btn btn-success btn-sm" onclick="viewHtmlTable()">
-                        <i class="fas fa-table"></i> View HTML Table
-                    </button>
-                    <div id="viewStatus" class="mt-3" style="display: none;">
-                        <div id="viewMessage" class="alert"></div>
-                    </div>
+                    <p>The HTML dashboard is already displayed above. You can interact with the tables and buttons to view your data.</p>
                 </div>
 
                 <div class="step-section mb-4">
@@ -476,36 +468,7 @@
             }
         }
 
-        async function startStreamlit() {
-            const btn = document.getElementById('startStreamlitBtn');
-            const statusDiv = document.getElementById('viewStatus');
-            const statusMessage = document.getElementById('viewMessage');
 
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
-            statusDiv.style.display = 'block';
-            statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = 'Starting Streamlit dashboard...';
-
-            try {
-                const response = await fetch('/start_streamlit', { method: 'POST' });
-                const result = await response.json();
-
-                if (result.success) {
-                    statusMessage.className = 'alert alert-success';
-                    statusMessage.innerHTML = `<strong>Streamlit Dashboard:</strong> ${result.message}`;
-                } else {
-                    statusMessage.className = 'alert alert-danger';
-                    statusMessage.innerHTML = `<strong>Error:</strong> ${result.error}`;
-                }
-            } catch (error) {
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = `<strong>Error:</strong> ${error.message}`;
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-chart-line"></i> Start Streamlit Dashboard';
-            }
-        }
 
         function viewHtmlTable() {
             const statusDiv = document.getElementById('viewStatus');
@@ -636,11 +599,11 @@
                     tableBody.innerHTML = last10Rows.map((row, index) => `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${row.timestamp}</td>
-                            <td>${row.temperature.toFixed(2)}</td>
-                            <td>${row.humidity.toFixed(2)}</td>
-                            <td>${row.irradiance.toFixed(2)}</td>
-                            <td>${row.wind_speed.toFixed(2)}</td>
+                            <td>${row.timestamp || 'N/A'}</td>
+                            <td>${row.temperature !== null && row.temperature !== undefined ? row.temperature.toFixed(2) : 'N/A'}</td>
+                            <td>${row.humidity !== null && row.humidity !== undefined ? row.humidity.toFixed(2) : 'N/A'}</td>
+                            <td>${row.irradiance !== null && row.irradiance !== undefined ? row.irradiance.toFixed(2) : 'N/A'}</td>
+                            <td>${row.wind_speed !== null && row.wind_speed !== undefined ? row.wind_speed.toFixed(2) : 'N/A'}</td>
                         </tr>
                     `).join('');
 
@@ -681,11 +644,11 @@
                     tableBody.innerHTML = top10Rows.map((row, index) => `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${row.timestamp}</td>
-                            <td>${row.temperature.toFixed(2)}</td>
-                            <td>${row.humidity.toFixed(2)}</td>
-                            <td>${row.irradiance.toFixed(2)}</td>
-                            <td>${row.wind_speed.toFixed(2)}</td>
+                            <td>${row.timestamp || 'N/A'}</td>
+                            <td>${row.temperature !== null && row.temperature !== undefined ? row.temperature.toFixed(2) : 'N/A'}</td>
+                            <td>${row.humidity !== null && row.humidity !== undefined ? row.humidity.toFixed(2) : 'N/A'}</td>
+                            <td>${row.irradiance !== null && row.irradiance !== undefined ? row.irradiance.toFixed(2) : 'N/A'}</td>
+                            <td>${row.wind_speed !== null && row.wind_speed !== undefined ? row.wind_speed.toFixed(2) : 'N/A'}</td>
                         </tr>
                     `).join('');
 
@@ -981,14 +944,14 @@
                     tableBody.innerHTML = last10Rows.map((row, index) => `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${row.timestamp}</td>
-                            <td>${row.temperature.toFixed(2)}</td>
-                            <td>${row.humidity.toFixed(2)}</td>
-                            <td>${row.irradiance.toFixed(2)}</td>
-                            <td>${row.wind_speed.toFixed(2)}</td>
-                            <td>${row.wind_power_density ? row.wind_power_density.toFixed(2) : 'N/A'}</td>
-                            <td>${row.solar_energy_yield ? row.solar_energy_yield.toFixed(2) : 'N/A'}</td>
-                            <td>${row.source}</td>
+                            <td>${row.timestamp || 'N/A'}</td>
+                            <td>${row.temperature !== null && row.temperature !== undefined ? row.temperature.toFixed(2) : 'N/A'}</td>
+                            <td>${row.humidity !== null && row.humidity !== undefined ? row.humidity.toFixed(2) : 'N/A'}</td>
+                            <td>${row.irradiance !== null && row.irradiance !== undefined ? row.irradiance.toFixed(2) : 'N/A'}</td>
+                            <td>${row.wind_speed !== null && row.wind_speed !== undefined ? row.wind_speed.toFixed(2) : 'N/A'}</td>
+                            <td>${row.wind_power_density !== null && row.wind_power_density !== undefined ? row.wind_power_density.toFixed(2) : 'N/A'}</td>
+                            <td>${row.solar_energy_yield !== null && row.solar_energy_yield !== undefined ? row.solar_energy_yield.toFixed(2) : 'N/A'}</td>
+                            <td>${row.source || 'N/A'}</td>
                         </tr>
                     `).join('');
 
@@ -1029,12 +992,14 @@
                     tableBody.innerHTML = top10Rows.map((row, index) => `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${row.timestamp}</td>
-                            <td>${row.temperature.toFixed(2)}</td>
-                            <td>${row.humidity.toFixed(2)}</td>
-                            <td>${row.irradiance.toFixed(2)}</td>
-                            <td>${row.wind_speed.toFixed(2)}</td>
-                            <td>${row.source}</td>
+                            <td>${row.timestamp || 'N/A'}</td>
+                            <td>${row.temperature !== null && row.temperature !== undefined ? row.temperature.toFixed(2) : 'N/A'}</td>
+                            <td>${row.humidity !== null && row.humidity !== undefined ? row.humidity.toFixed(2) : 'N/A'}</td>
+                            <td>${row.irradiance !== null && row.irradiance !== undefined ? row.irradiance.toFixed(2) : 'N/A'}</td>
+                            <td>${row.wind_speed !== null && row.wind_speed !== undefined ? row.wind_speed.toFixed(2) : 'N/A'}</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>${row.source || 'N/A'}</td>
                         </tr>
                     `).join('');
 
@@ -1075,12 +1040,14 @@
                     tableBody.innerHTML = top10Rows.map((row, index) => `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${row.timestamp}</td>
-                            <td>${row.temperature.toFixed(2)}</td>
-                            <td>${row.humidity.toFixed(2)}</td>
-                            <td>${row.irradiance.toFixed(2)}</td>
-                            <td>${row.wind_speed.toFixed(2)}</td>
-                            <td>${row.source}</td>
+                            <td>${row.timestamp || 'N/A'}</td>
+                            <td>${row.temperature !== null && row.temperature !== undefined ? row.temperature.toFixed(2) : 'N/A'}</td>
+                            <td>${row.humidity !== null && row.humidity !== undefined ? row.humidity.toFixed(2) : 'N/A'}</td>
+                            <td>${row.irradiance !== null && row.irradiance !== undefined ? row.irradiance.toFixed(2) : 'N/A'}</td>
+                            <td>${row.wind_speed !== null && row.wind_speed !== undefined ? row.wind_speed.toFixed(2) : 'N/A'}</td>
+                            <td>N/A</td>
+                            <td>N/A</td>
+                            <td>${row.source || 'N/A'}</td>
                         </tr>
                     `).join('');
 

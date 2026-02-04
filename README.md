@@ -213,7 +213,8 @@ Manual collection lets you trigger data ingestion instantly via a web API call.
    curl -X POST http://localhost:5000/trigger_ingestion
    ```
    - This sends a request to collect new sensor data
-   - The response will show how many data points were collected
+   - The response will show how many data points were collected (typically 20 rows: 10 weather + 10 solar irradiance)
+   - **Status**: ✅ Working - Successfully tested and integrated into HTML dashboard
 
 5. **Check the server window** (first Command Prompt):
    - You should see messages like:
@@ -250,11 +251,8 @@ Now that you've collected data, let's see it in the web dashboard!
    cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5\web"
    ```
 
-2. **Start the Streamlit dashboard**:
-   ```bash
-   python dashboard.py
-   ```
-   - This opens your default web browser automatically
+2. **Open the HTML dashboard**:
+   - Open your web browser and navigate to http://localhost:5000
    - The dashboard will load and show your sensor data
 
 3. **Explore the dashboard**:
