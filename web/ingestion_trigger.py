@@ -468,7 +468,11 @@ def fetch_sim_data_from_db():
     try:
         logger.info("Fetching sim data from database")
 
+        # Validate database connection
         conn = get_connection()
+        if not conn:
+            raise Exception("Failed to establish database connection")
+
         with conn.cursor() as cur:
             # Get ALL sim data entries
             cur.execute("""
@@ -481,47 +485,86 @@ def fetch_sim_data_from_db():
         conn.close()
 
         if not rows:
+            logger.warning("No sim data found in database")
             return jsonify({
                 'success': False,
                 'error': 'No sim data found in database'
             }), 404
 
-        # Format data for JSON response
+        # Validate and format data for JSON response
         sim_data = []
         for row in rows:
-            sim_data.append({
-                'timestamp': row[0].strftime('%Y-%m-%d %H:%M:%S') if row[0] else '',
-                'temperature': float(row[1]) if row[1] else 0.0,
-                'humidity': float(row[2]) if row[2] else 0.0,
-                'irradiance': float(row[3]) if row[3] else 0.0,
-                'wind_speed': float(row[4]) if row[4] else 0.0
-            })
+            try:
+                # Data validation
+                if len(row) != 5:
+                    logger.warning(f"Invalid row length: expected 5, got {len(row)}")
+                    continue
+
+                timestamp = row[0].strftime('%Y-%m-%d %H:%M:%S') if row[0] else ''
+                temperature = float(row[1]) if row[1] is not None else 0.0
+                humidity = float(row[2]) if row[2] is not None else 0.0
+                irradiance = float(row[3]) if row[3] is not None else 0.0
+                wind_speed = float(row[4]) if row[4] is not None else 0.0
+
+                sim_data.append({
+                    'timestamp': timestamp,
+                    'temperature': temperature,
+                    'humidity': humidity,
+                    'irradiance': irradiance,
+                    'wind_speed': wind_speed
+                })
+            except (ValueError, TypeError) as e:
+                logger.warning(f"Data validation error for row: {e}")
+                continue
 
         # Get summary information
         summary = get_sim_summary()
 
-        # Update collect1.txt with the fetched data
+        # Update collect1.txt with the fetched data (with error handling)
         data_file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'collect1.txt')
         current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        with open(data_file_path, 'w') as f:
-            f.write(f'# Data collection last updated: {current_timestamp}\n')
-            if summary:
-                f.write(f'# Summary: sim={summary["total_rows"]}\n')
-            f.write('[sim]\n')
-            f.write('timestamp,temperature,humidity,irradiance,wind_speed\n')
-            for row in rows:
-                timestamp_str = row[0].strftime('%Y-%m-%d %H:%M:%S') if row[0] else current_timestamp
-                f.write(f'{timestamp_str},{row[1] or 0.0},{row[2] or 0.0},{row[3] or 0.0},{row[4] or 0.0}\n')
+        try:
+            with open(data_file_path, 'w', encoding='utf-8') as f:
+                f.write(f'# Data collection last updated: {current_timestamp}\n')
+                # Dynamically calculate row count
+                actual_row_count = len(sim_data)
+                f.write(f'# Summary: sim={actual_row_count}\n')
+                f.write('[sim]\n')
+                f.write('timestamp,temperature,humidity,irradiance,wind_speed\n')
 
-        logger.info(f"Sim data fetched and collect1.txt updated: {len(rows)} rows")
+                rows_written = 0
+                for row in rows:
+                    try:
+                        timestamp_str = row[0].strftime('%Y-%m-%d %H:%M:%S') if row[0] else current_timestamp
+                        temp_val = row[1] if row[1] is not None else 0.0
+                        hum_val = row[2] if row[2] is not None else 0.0
+                        irr_val = row[3] if row[3] is not None else 0.0
+                        wind_val = row[4] if row[4] is not None else 0.0
+
+                        f.write(f'{timestamp_str},{temp_val},{hum_val},{irr_val},{wind_val}\n')
+                        rows_written += 1
+                    except Exception as write_error:
+                        logger.warning(f"Failed to write row to file: {write_error}")
+                        continue
+
+                logger.info(f"Successfully wrote {rows_written} rows to collect1.txt")
+
+        except IOError as file_error:
+            logger.error(f"Failed to write to collect1.txt: {file_error}")
+            return jsonify({
+                'success': False,
+                'error': f'File write error: {str(file_error)}'
+            }), 500
+
+        logger.info(f"Sim data fetched and collect1.txt updated: {len(sim_data)} rows")
 
         return jsonify({
             'success': True,
-            'rows_fetched': len(rows),
+            'rows_fetched': len(sim_data),
             'data': sim_data,
             'summary': summary,
-            'message': f'Sim data fetched and collect1.txt updated with {len(rows)} rows'
+            'message': f'Sim data fetched and collect1.txt updated with {len(sim_data)} rows'
         })
 
     except Exception as e:
