@@ -44,26 +44,38 @@ def fetch_weather_data():
         logger.error(f"Unexpected API response format: {e}")
         return None
 
-def insert_weather_data(conn, weather_data):
+def insert_weather_data(conn, weather_data, source=None, wind_power_density=None, solar_energy_yield=None):
     """
     Insert weather data tuple into sensor_data table.
     """
     try:
         timestamp, temperature, humidity, irradiance, wind_speed = weather_data
         with conn.cursor() as cur:
-            cur.execute(
-                """
-                INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed)
-                VALUES (%s, %s, %s, %s, %s)
-                ON CONFLICT (timestamp) DO NOTHING;
-                """,
-                (timestamp, temperature, humidity, irradiance, wind_speed)
-            )
+            if source:
+                cur.execute(
+                    """
+                    INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed, source, wind_power_density, solar_energy_yield)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (timestamp) DO NOTHING;
+                    """,
+                    (timestamp, temperature, humidity, irradiance, wind_speed, source, wind_power_density, solar_energy_yield)
+                )
+            else:
+                cur.execute(
+                    """
+                    INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed, wind_power_density, solar_energy_yield)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (timestamp) DO NOTHING;
+                    """,
+                    (timestamp, temperature, humidity, irradiance, wind_speed, wind_power_density, solar_energy_yield)
+                )
         conn.commit()
         logger.info("Weather data inserted successfully.")
     except Exception as e:
         logger.error(f"Insert failed: {e}")
         raise
+
+
 
 # Legacy batch mode (for backward compatibility)
 if __name__ == "__main__":

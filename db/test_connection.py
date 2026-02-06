@@ -7,25 +7,74 @@ def main():
 
     try:
         with conn.cursor() as cur:
-            # Step 2: Count rows
+            # Step 2: Count total rows
             cur.execute("SELECT COUNT(*) FROM sensor_data;")
             result = cur.fetchone()
             print("✅ Database connection test successful!")
-            print(f"📊 sensor_data table has {result[0]} rows.")
+            print(f"📊 sensor_data table has {result[0]} total rows.")
+            
+            # Step 3: Count rows by source
+            cur.execute("SELECT COUNT(*) FROM sensor_data WHERE source = 'sim';")
+            sim_count = cur.fetchone()[0]
+            
+            # OpenWeather data: source = 'openweather' OR source = 'Database' OR source IS NULL
+            # Exclude nasa_power source explicitly
+            cur.execute("""
+                SELECT COUNT(*) FROM sensor_data 
+                WHERE (source = 'openweather' OR source = 'Database' OR source IS NULL)
+                AND source != 'nasa_power';
+            """)
+            openweather_count = cur.fetchone()[0]
+            
+            # NASA POWER data: source = 'nasa_power'
+            cur.execute("SELECT COUNT(*) FROM sensor_data WHERE source = 'nasa_power';")
+            nasa_count = cur.fetchone()[0]
+            
+            # Calculate other rows (unknown sources)
+            other_count = result[0] - sim_count - openweather_count - nasa_count
+            
+            print(f"   - Sim data: {sim_count} rows")
+            print(f"   - OpenWeather data: {openweather_count} rows")
+            print(f"   - NASA POWER data: {nasa_count} rows")
+            if other_count > 0:
+                print(f"   - Other/Unknown sources: {other_count} rows")
 
-            # Step 3: Show top 2 rows (earliest timestamps)
-            cur.execute("SELECT * FROM sensor_data ORDER BY timestamp ASC LIMIT 2;")
-            top_rows = cur.fetchall()
-            headers = [desc[0] for desc in cur.description]
-            print("\n🔎 Top 2 rows (earliest):")
-            print(tabulate(top_rows, headers=headers, tablefmt="psql"))
+            # Step 4: Show latest row for each source
+            headers = None
+            
+            # Latest sim row
+            cur.execute("SELECT * FROM sensor_data WHERE source = 'sim' ORDER BY timestamp DESC LIMIT 1;")
+            sim_row = cur.fetchall()
+            if sim_row:
+                if headers is None:
+                    headers = [desc[0] for desc in cur.description]
+                print("\n🔎 Latest sim row:")
+                print(tabulate(sim_row, headers=headers, tablefmt="psql"))
+            
+            # Latest openweather row (include Database and NULL sources, exclude nasa_power)
+            cur.execute("""
+                SELECT * FROM sensor_data 
+                WHERE (source = 'openweather' OR source = 'Database' OR source IS NULL)
+                AND source != 'nasa_power'
+                ORDER BY timestamp DESC LIMIT 1;
+            """)
+            openweather_row = cur.fetchall()
+            if openweather_row:
+                if headers is None:
+                    headers = [desc[0] for desc in cur.description]
+                print("\n🔎 Latest OpenWeather row:")
+                print(tabulate(openweather_row, headers=headers, tablefmt="psql"))
+            
+            # Latest nasa_power row
+            cur.execute("SELECT * FROM sensor_data WHERE source = 'nasa_power' ORDER BY timestamp DESC LIMIT 1;")
+            nasa_row = cur.fetchall()
+            if nasa_row:
+                if headers is None:
+                    headers = [desc[0] for desc in cur.description]
+                print("\n🔎 Latest NASA POWER row:")
+                print(tabulate(nasa_row, headers=headers, tablefmt="psql"))
 
-            # Step 4: Show bottom 2 rows (latest timestamps)
-            cur.execute("SELECT * FROM sensor_data ORDER BY timestamp DESC LIMIT 2;")
-            bottom_rows = cur.fetchall()
-            headers = [desc[0] for desc in cur.description]
-            print("\n🔎 Bottom 2 rows (latest):")
-            print(tabulate(bottom_rows, headers=headers, tablefmt="psql"))
+
 
     except Exception as e:
         print(f"❌ Query failed: {e}")

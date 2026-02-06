@@ -51,17 +51,18 @@ if weather_data:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed, wind_power_density, solar_energy_yield, source)
+                INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed, source, wind_power_density, solar_energy_yield)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (timestamp) DO NOTHING;
                 """,
-                (timestamp, temperature, humidity, irradiance, wind_speed, wind_power_density, solar_energy_yield, "openweather")
+                (timestamp, temperature, humidity, irradiance, wind_speed, "openweather", wind_power_density, solar_energy_yield)
             )
         conn.commit()
         logging.info("Enhanced weather data inserted successfully.")
     except Exception as e:
         logging.error(f"Insert failed: {e}")
         logging.error(f"Data attempted: {weather_data}")
+
 else:
     logging.error("Failed to fetch weather data from OpenWeather API")
 

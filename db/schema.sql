@@ -14,8 +14,11 @@ CREATE TABLE sensor_data (
     cloudiness DECIMAL(5,2),  -- Cloudiness percentage (blank if not applicable)
     uv_index DECIMAL(5,2),    -- UV Index (blank if not applicable)
     irradiance DECIMAL(7,2),
+    wind_power_density DECIMAL(7,2),  -- Wind power density in W/m²
+    solar_energy_yield DECIMAL(7,3),  -- Solar energy yield in kWh/m²/day
     source VARCHAR(50)
 );
+
 
 -- Optional: Add TimescaleDB extension for better time-series performance
 -- CREATE EXTENSION IF NOT EXISTS timescaledb;

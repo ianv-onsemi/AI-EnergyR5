@@ -19,50 +19,48 @@ This project develops a cross-platform application for predictive maintenance of
 
 ### 1. Clone Repository
 ```bash
+git clone <repository-url>
+cd AI-EnergyR5
+```
+
+#### Project Structure
+```
 AI-EnergyR5/
 │
 ├── README.md             # Documentation for setup and usage
-├── clean_database.py     # Script to clean database (retain only sim data)
+├── TODO.md               # Task tracking and project roadmap
 ├── config.py             # Configuration settings (API keys, database credentials)
-├── create_collectAll.py  # Script to create collectAll data collection
-├── generate_past_data.py # Script to generate historical data
 ├── requirements.txt      # List of Python dependencies
-├── review_openweather_data.py # Script to review OpenWeather data
-├── temp_check_data.py    # Temporary script for data checking
-├── temp_summary.py       # Temporary script for data summary
-├── temp_test_endpoint.py # Temporary script for endpoint testing
-├── update_collect1.py    # Script to update collect1 data
-├── update_collectAll.py  # Script to update collectAll data
+├── check_schema.py       # Schema validation script
+├── temp_summary.py       # Temporary data summary script
 │
 ├── api_wrappers/         # External API integration modules
 │   ├── nasa_power.py     # NASA POWER API wrapper for solar irradiance data
-│   └── openweather.py    # OpenWeather API wrapper for weather data
+│   └── openweather.py    # OpenWeather API wrapper with wind/solar calculations
 │
 ├── data/                 # Data files and logs
-│   ├── collect1.txt      # Collected data sim
-│   ├── collect2.txt      # Collected data nasapower
-│   ├── collect3.txt      # Collected data openweather
+│   ├── collect1.txt      # Simulated sensor data (with wind_power_density, solar_energy_yield)
+│   ├── collect2.txt      # OpenWeather API data (with wind_power_density, solar_energy_yield)
+│   ├── collect3.txt      # NASA POWER data (with wind_power_density, solar_energy_yield)
 │   ├── collectAll.txt    # All collected data combined
 │   ├── sensor_data.csv   # CSV file for sensor data
 │   └── sensor_logs.txt   # Plain text sensor log file
 │
 ├── db/                   # Database setup and connectors
-│   ├── api_ingest_openweather.py # OpenWeather API ingestion
+│   ├── api_ingest_openweather.py # OpenWeather API ingestion with energy calculations
 │   ├── db_connector.py   # Python script for DB connection
-│   ├── db_ingest.py      # Data ingestion script
-│   ├── schema.sql        # SQL table definitions
+│   ├── db_ingest.py      # Data ingestion script with logging
+│   ├── fix_source_labels.py # Fix source labels in database
+│   ├── schema.sql        # SQL table definitions (11 columns including energy metrics)
 │   ├── sensor_stream_sim.py # Sensor stream simulation
 │   └── test_connection.py # Quick connection test script
 │
 ├── docs/                 # Documentation and notes
-│   ├── myNotes.txt       # Development notes and progress logs
-│   └── TODO.md           # Task list and project roadmap
+│   └── myNotes.txt       # Development notes and progress logs
 │
-├── logs/                 # Log files
+├── logs/                 # Log files with daily rotation
 │   ├── ingestion.log     # Today's ingestion log
-│   ├── ingestion.log.2026-01-20 # Yesterday's log (auto-rotated)
-│   ├── ingestion.log.2026-01-26 # Older log (auto-rotated)
-│   └── ingestion.log.2026-01-27 # Older log (auto-rotated)
+│   └── ingestion.log.YYYY-MM-DD # Rotated daily logs
 │
 ├── notebooks/            # Jupyter notebooks for demos
 │   └── data_pipeline_demo.py # Step-by-step interactive demo
@@ -73,12 +71,11 @@ AI-EnergyR5/
 ├── scripts/              # Utility scripts
 │   ├── capture_weather_data.py # Automated weather data capture
 │   ├── count_data_sources.py   # Count data sources utility
-│   ├── data_collector.py       # Data collection script
+│   ├── data_collector.py       # Data collection with validation
 │   ├── run_ingest.bat          # Batch file for scheduled ingestion
 │   └── show_recent_data.py     # Display recent sensor data
 │
 ├── sensors/              # Sensor data scripts
-│   ├── sensor_ingest.py  # Generate or simulate sensor readings
 │   └── sensor_logs.txt   # Sensor logs
 │
 ├── tests/                # Testing and validation scripts
@@ -86,76 +83,120 @@ AI-EnergyR5/
 │   └── test_imports.py   # Import testing
 │
 └── web/                  # Web-related files
-    ├── dashboard.html    # HTML interface for data display
-    ├── dashboard.py      # Streamlit dashboard
+    ├── dashboard.html    # HTML interface with 3 data tables (Sim, Weather, NASA)
     ├── generate_html_table.py # HTML table generation
-    ├── ingestion_trigger.py   # Flask endpoint for ingestion
+    ├── ingestion_trigger.py   # Flask endpoint for data fetching and file generation
+    ├── latest_weather_data.html # Latest weather data display
     ├── data/             # Web-specific data files
-    │   └── sensor_logs.txt # Web sensor logs
+    │   └── sensor_logs.txt
     └── logs/             # Web-specific logs
-        └── ingestion.log # Web ingestion log
+        └── ingestion.log
 ```
+
 
 ### 2. PostgreSQL Database Management
 
-This project uses PostgreSQL as the database backend. Follow these steps to turn PostgreSQL on and off:
+This project uses PostgreSQL as the database backend. Follow these steps to set up and manage your database:
 
-#### Turn PostgreSQL On (Start the Server)
-1. **Open Command Prompt Window**:
-   - Press `Win + R`, type `cmd`, and press Enter
-   - Or search for "Command Prompt" in the Start menu
+#### Prerequisites
+- PostgreSQL installed (portable or standard installation)
+- Python environment with `psycopg2` and `python-dotenv` installed
 
-2. **Navigate to PostgreSQL Bin Directory**:
-   - In the Command Prompt window, type the following command and press Enter:
-     ```
-     cd "D:\My Documents\tools\postgresql\pgsql\bin"
-     ```
+#### Step 1: Configure Environment Variables
 
-3. **Start PostgreSQL Server**:
-   - In the same Command Prompt window, type the following command and press Enter:
-     ```
-     pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" -l logfile start
-     ```
-   - This starts PostgreSQL in the background on port 5432
-   - You should see a message indicating the server is starting
-   - The server will continue running until manually stopped
+Create a `.env` file in the project root with your database credentials:
 
-4. **Verify PostgreSQL is Running** (Optional):
-   - In the same Command Prompt window, type the following command and press Enter:
-     ```
-     pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" status
-     ```
-   - Should show: "pg_ctl: server is running (PID: XXXX)"
+```bash
+# .env file
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=energy_db
+DB_USER=postgres
+DB_PASS=your_password
+```
 
-#### Turn PostgreSQL Off (Stop the Server)
-1. **Open Command Prompt Window**:
-   - Press `Win + R`, type `cmd`, and press Enter
-   - Or search for "Command Prompt" in the Start menu
+> **Note:** The `db/db_connector.py` script automatically loads these variables. Default values are provided if `.env` is not present.
 
-2. **Navigate to PostgreSQL Bin Directory**:
-   - In the Command Prompt window, type the following command and press Enter:
-     ```
-     cd "D:\My Documents\tools\postgresql\pgsql\bin"
-     ```
+#### Step 2: Start PostgreSQL Server
 
-3. **Stop PostgreSQL Server**:
-   - In the same Command Prompt window, type the following command and press Enter:
-     ```
-     pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" stop
-     ```
-   - This performs a clean shutdown of the database server
-   - You should see a message indicating the server is stopping
+**Windows (Command Prompt):**
+```bash
+cd "D:\My Documents\tools\postgresql\pgsql\bin"
+pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" -l logfile start
+```
 
-#### Notes
-- PostgreSQL must be running before you can connect to the database from Python scripts
-- The database connection settings are configured in `db/db_connector.py` with default values:
-  - Host: `localhost`
-  - Port: `5432`
-  - Database: `energy_db`
-  - User: `postgres`
-  - Password: `PdM`
-- To test the database connection, run: `python db/test_connection.py`
-- For detailed development notes and progress logs, refer to `mynotes.txt`
+**Verify server is running:**
+```bash
+pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" status
+```
+
+#### Step 3: Initialize Database Schema
+
+Run the schema script to create the database and table:
+
+```bash
+psql -U postgres -f db/schema.sql
+```
+
+**Database Schema (11 columns):**
+
+| Column | Type | Description |
+|--------|------|-------------|
+| rn | SERIAL | Auto-incrementing row number (Primary Key) |
+| timestamp | TIMESTAMP | Data collection timestamp |
+| temperature | DECIMAL(5,2) | Temperature in Celsius |
+| humidity | DECIMAL(5,2) | Relative humidity percentage |
+| wind_speed | DECIMAL(5,2) | Wind speed in m/s |
+| cloudiness | DECIMAL(5,2) | Cloud cover percentage |
+| uv_index | DECIMAL(5,2) | UV index value |
+| irradiance | DECIMAL(7,2) | Solar irradiance in W/m² |
+| wind_power_density | DECIMAL(7,2) | Wind power density in W/m² |
+| solar_energy_yield | DECIMAL(7,3) | Solar energy yield in kWh/m²/day |
+| source | VARCHAR(50) | Data source (sim, openweather, nasa_power) |
+
+#### Step 4: Test Database Connection
+
+Run the connection test to verify setup:
+
+```bash
+python db/test_connection.py
+```
+
+**Expected output:**
+- ✅ Database connection confirmation
+- 📊 Total row count
+- Breakdown by source:
+  - Sim data: X rows
+  - OpenWeather data: X rows
+  - NASA POWER data: X rows
+- Latest row samples from each source
+
+#### Step 5: Stop PostgreSQL Server
+
+When finished, stop the server gracefully:
+
+```bash
+pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" stop
+```
+
+#### Quick Reference
+
+| Task | Command |
+|------|---------|
+| Start server | `pg_ctl.exe -D "path\to\data" -l logfile start` |
+| Stop server | `pg_ctl.exe -D "path\to\data" stop` |
+| Check status | `pg_ctl.exe -D "path\to\data" status` |
+| Test connection | `python db/test_connection.py` |
+| View schema | `psql -U postgres -d energy_db -c "\d sensor_data"` |
+
+#### Troubleshooting
+
+- **Connection failed**: Verify PostgreSQL is running and `.env` credentials are correct
+- **Database does not exist**: Run `db/schema.sql` to initialize
+- **Permission denied**: Check PostgreSQL user privileges
+- **Port already in use**: Ensure no other PostgreSQL instance is running on port 5432
+
+> For detailed development notes, refer to `docs/myNotes.txt`
 
 ---
 
@@ -259,16 +300,14 @@ Now that you've collected data, let's see it in the web dashboard!
    - **Table View**: See all your sensor data in a neat table format
      - Columns: timestamp, temperature, humidity, irradiance, wind_speed
      - Data is sorted by timestamp (newest first)
-   - **Charts View**: Interactive charts showing trends over time
-     - Temperature chart (line graph over time)
-     - Humidity chart
-     - Irradiance (solar power) chart
-     - Wind speed chart
-     - Hover over points to see exact values
-   - **Summary View**: Statistics and insights
-     - Average values for each sensor type
-     - Min/max values
-     - Recent data trends
+   - **Data Tables View**: Three separate tables showing different data sources
+     - Sim Data: Simulated sensor readings
+     - Weather Data: OpenWeather API data
+     - NASA POWER Data: Solar irradiance data
+   - **Status Indicators**: Real-time feedback on system operations
+     - Success/error messages for each operation
+     - Row counts and data source breakdowns
+
 
 4. **Alternative: View HTML Table**:
    ```bash
@@ -317,6 +356,8 @@ For a more user-friendly experience, start directly with the interactive HTML in
    - You should see: "Running on http://0.0.0.0:5000"
    - Keep this window open
    - Access the dashboard at: `http://10.243.119.221:5000` (or `http://localhost:5000` if running locally)
+   - note that IP is changing on every new start of web server.
+   - web server feb6: http://10.243.120.172:5000/
 
 ##### Step 2: Use the Interactive Buttons
 
@@ -332,8 +373,9 @@ The HTML page provides buttons for each Phase 8 routine with function descriptio
 - **Test Automatic Ingestion**: Simulates scheduled data collection (time-based)
 
 **Visualization Buttons:**
-- **Start Streamlit Dashboard**: Launches interactive charts and analytics dashboard
+- **View HTML Dashboard**: Opens the Flask web interface with data tables
 - **View HTML Table**: Generates and displays data in HTML table format
+
 
 **Monitoring Buttons:**
 - **View Ingestion Logs**: Shows recent log entries with timestamps and status
@@ -361,8 +403,9 @@ Follow this sequence for complete Phase 8 testing:
    - Click "Test Automatic Ingestion" → Tests scheduled collection logic
 
 3. **Data Visualization**:
-   - Click "Start Streamlit Dashboard" → Opens interactive charts at http://localhost:8501
+   - Click "View HTML Dashboard" → Opens the web interface at http://localhost:5000
    - Click "View HTML Table" → Shows data in formatted HTML table
+
 
 4. **Verification**:
    - Click "View Ingestion Logs" → Check for successful data collection entries
@@ -382,9 +425,10 @@ The bottom of the HTML page includes 5 rows for error logs and troubleshooting:
 
 After following these steps, your web dashboard should show:
 - **Recent sensor readings** with timestamps from when you triggered collection
-- **Interactive charts** plotting temperature, humidity, irradiance, and wind speed over time
+- **Three data tables** organized by source (Sim, Weather, NASA POWER)
 - **Real data** from OpenWeather API (weather) and NASA POWER API (solar irradiance)
 - **Clean, organized display** that's easy to read and understand
+
 
 #### Troubleshooting
 
@@ -394,14 +438,16 @@ If something doesn't work:
 - **"Connection failed"**: Check if PostgreSQL is running (Step 1)
 - **"Import error"**: Run `pip install -r requirements.txt`
 - **No data collected**: Check your internet connection and API keys in `config.py`
-- **Dashboard won't open**: Make sure no other programs are using port 8501
+- **Dashboard won't open**: Make sure no other programs are using port 5000
+
 
 **Common Issues and Solutions:**
 - **"Flask server not responding"**: Restart `python ingestion_trigger.py`
 - **"PostgreSQL not running"**: Use "Check PostgreSQL Status" button to diagnose
 - **"API key errors"**: Check `config.py` for valid API keys
 - **"No data collected"**: Verify internet connection and API limits
-- **"Streamlit won't start"**: Check if port 8501 is available
+- **"Flask server won't start"**: Check if port 5000 is available
+
 
 #### Quick Reference Commands
 
@@ -416,8 +462,9 @@ python ingestion_trigger.py
 # Trigger manual data collection
 curl -X POST http://localhost:5000/trigger_ingestion
 
-# Start web dashboard to view data
-streamlit run dashboard.py
+# Open web dashboard to view data
+# Navigate to http://localhost:5000 after starting the Flask server
+
 
 # Check database contents
 python db/test_connection.py
@@ -475,15 +522,17 @@ The project is organized into phases for systematic development. Below is the la
 - Daily log rotation (TimedRotatingFileHandler)
 
 ### Phase 7: Visualization & Dashboard ✅ Done
-- Plot temperature vs timestamp chart
-- Add multiple charts (humidity, irradiance, wind speed)
-- Build simple dashboard (Streamlit with sidebar)
+- Generate HTML tables from database data
+- Build simple Flask web interface with data tables
+- Display three data sources (Sim, Weather, NASA) in separate tables
 
-### Phase 8: Real-Time Ingestion ✅ Done
+
+### Phase 8: Real-Time Ingestion 🔄 Partial
 - Simulate sensor streams (append rows every minute) ✅ Done
 - Implement manual trigger for on-demand ingestion ✅ Done
-- Enable continuous ingestion pipeline ✅ Done
+- Enable continuous ingestion pipeline ⏳ Pending
 - HTML interface integration for Phase 8 steps ✅ Done
+
 
 ### Phase 9: Web-Sensor Data Integration 🔄 Partial
 - Connect to OpenWeather API for local weather data ✅ Done
@@ -494,7 +543,7 @@ The project is organized into phases for systematic development. Below is the la
 - Combine local sensor + web API data for richer analytics ⏳ Pending
 
 #### Database Table Model
-The `sensor_data` table stores web sensor data with the following 9 headers:
+The `sensor_data` table stores web sensor data with the following 11 headers:
 
 | Header Label | Data Type | Description | Source API |
 |--------------|-----------|-------------|------------|
@@ -506,6 +555,8 @@ The `sensor_data` table stores web sensor data with the following 9 headers:
 | Cloudiness (%) | DECIMAL(5,2) | Cloud cover percentage | OpenWeather |
 | UV Index | DECIMAL(3,1) | Ultraviolet index value | OpenWeather |
 | Irradiance (W/m²) | DECIMAL(7,2) | Solar irradiance in watts per square meter | NASA POWER |
+| Wind Power Density (W/m²) | DECIMAL(7,2) | Wind power density | Calculated |
+| Solar Energy Yield (kWh/m²/day) | DECIMAL(7,3) | Solar energy yield | Calculated |
 | Source | VARCHAR(50) | Data source identifier (openweather/nasa_power) | System |
 
 ### Phase 10: Predictive Analytics ⏳ Pending

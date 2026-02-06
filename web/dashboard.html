@@ -10,13 +10,14 @@
             margin: 20px;
             background-color: #f4f4f4;
         }
-        h1 {
+        h1, h2 {
             color: #333;
         }
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            background: white;
         }
         th, td {
             padding: 12px;
@@ -30,62 +31,86 @@
         tr:hover {
             background-color: #f5f5f5;
         }
+        .btn {
+            padding: 8px 16px;
+            margin: 4px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-info { background-color: #17a2b8; color: white; }
+        .btn-warning { background-color: #ffc107; color: black; }
+        .alert {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .alert-success { background-color: #d4edda; color: #155724; }
+        .alert-info { background-color: #d1ecf1; color: #0c5460; }
+        .alert-warning { background-color: #fff3cd; color: #856404; }
+        .alert-danger { background-color: #f8d7da; color: #721c24; }
+        .mt-2 { margin-top: 8px; }
+        .mb-2 { margin-bottom: 8px; }
+        .mb-3 { margin-bottom: 12px; }
     </style>
 </head>
 <body>
     <h2>Table-1: Sim Data</h2>
-    <p>This section displays simulated sensor data for verification purposes, loaded from collect1.txt.</p>
+    <p>This section displays simulated sensor data loaded from collect1.txt.</p>
     <div id="simTimestamp" class="mt-2 mb-2" style="font-size: 0.9em; color: #666;"></div>
     <div class="mb-3">
-        <button id="fetchDatabaseBtn" class="btn btn-success btn-sm me-2" onclick="fetchDatabase()">
-            <i class="fas fa-database"></i> Fetch Database
+        <button id="fetchDatabaseBtn" class="btn btn-success" onclick="fetchDatabase()">
+            Fetch Database
         </button>
-        <button id="loadLatestBtn" class="btn btn-primary btn-sm me-2" onclick="loadLatestData()">
-            <i class="fas fa-clock"></i> Latest 10 Rows
+        <button id="loadLatestBtn" class="btn btn-primary" onclick="loadLatestData()">
+            Latest 10 Rows
         </button>
-        <button id="loadTopWindBtn" class="btn btn-info btn-sm me-2" onclick="loadTopWindSpeed()">
-            <i class="fas fa-wind"></i> Top 10 Wind Speed
+        <button id="loadTopWindBtn" class="btn btn-info" onclick="loadTopWindSpeed()">
+            Top 10 Wind Speed
         </button>
-        <button id="loadTopIrradianceBtn" class="btn btn-warning btn-sm" onclick="loadTopIrradiance()">
-            <i class="fas fa-sun"></i> Top 10 Solar Irradiance
+        <button id="loadTopIrradianceBtn" class="btn btn-warning" onclick="loadTopIrradiance()">
+            Top 10 Solar Irradiance
         </button>
     </div>
     <table id="simTable">
         <thead>
             <tr>
-                <th>RN</th>
+                <th>ID</th>
                 <th>Timestamp</th>
                 <th>Temperature (°C)</th>
                 <th>Humidity (%)</th>
-                <th>Wind Speed (m/s)</th>
-                <th>Cloudiness (%)</th>
-                <th>UV Index</th>
                 <th>Irradiance (W/m²)</th>
+                <th>Wind Speed (m/s)</th>
+                <th>Wind Power Density</th>
+                <th>Solar Energy Yield</th>
                 <th>Source</th>
             </tr>
         </thead>
         <tbody id="simTableBody">
             <tr>
-                <td colspan="9" style="text-align: center; color: #666;">Click "Load Sim Data" to load simulated sensor data from file</td>
+                <td colspan="9" style="text-align: center; color: #666;">Click "Fetch Database" to load data</td>
             </tr>
         </tbody>
     </table>
 
     <h2>Table-2: OpenWeather API</h2>
-    <p>This section displays real-time weather data fetched from OpenWeather API, including temperature, humidity, and wind speed. Data is updated when the ingestion button is triggered.</p>
+    <p>This section displays weather data from OpenWeather API.</p>
     <div id="weatherTimestamp" class="mt-2 mb-2" style="font-size: 0.9em; color: #666;"></div>
     <div class="mb-3">
-        <button id="fetchWeatherDatabaseBtn" class="btn btn-success btn-sm me-2" onclick="fetchWeatherDatabase()">
-            <i class="fas fa-database"></i> Fetch Database
+        <button id="fetchWeatherDatabaseBtn" class="btn btn-success" onclick="fetchWeatherDatabase()">
+            Fetch Database
         </button>
-        <button id="loadWeatherLatestBtn" class="btn btn-primary btn-sm me-2" onclick="loadWeatherLatestData()">
-            <i class="fas fa-clock"></i> Latest 10 Rows
+        <button id="loadWeatherLatestBtn" class="btn btn-primary" onclick="loadWeatherLatestData()">
+            Latest 10 Rows
         </button>
-        <button id="loadWeatherTopWindBtn" class="btn btn-info btn-sm me-2" onclick="loadWeatherTopWindSpeed()">
-            <i class="fas fa-wind"></i> Top 10 Wind Speed
+        <button id="loadWeatherTopWindBtn" class="btn btn-info" onclick="loadWeatherTopWindSpeed()">
+            Top 10 Wind Speed
         </button>
-        <button id="loadWeatherTopIrradianceBtn" class="btn btn-warning btn-sm" onclick="loadWeatherTopIrradiance()">
-            <i class="fas fa-sun"></i> Top 10 Solar Irradiance
+        <button id="loadWeatherTopIrradianceBtn" class="btn btn-warning" onclick="loadWeatherTopIrradiance()">
+            Top 10 Solar Irradiance
         </button>
     </div>
     <div id="weatherDbStatus" class="mt-3" style="display: none;">
@@ -94,1189 +119,698 @@
     <table id="weatherTable">
         <thead>
             <tr>
-                <th>RN</th>
+                <th>ID</th>
                 <th>Timestamp</th>
                 <th>Temperature (°C)</th>
                 <th>Humidity (%)</th>
-                <th>Wind Speed (m/s)</th>
-                <th>Cloudiness (%)</th>
-                <th>UV Index</th>
                 <th>Irradiance (W/m²)</th>
+                <th>Wind Speed (m/s)</th>
+                <th>Wind Power Density</th>
+                <th>Solar Energy Yield</th>
                 <th>Source</th>
             </tr>
         </thead>
         <tbody id="weatherTableBody">
             <tr>
-                <td colspan="9" style="text-align: center; color: #666;">Click "Trigger Data Ingestion" to fetch live weather data or "Load Weather Data from Database" to view stored data</td>
+                <td colspan="9" style="text-align: center; color: #666;">Click "Fetch Database" to load weather data</td>
             </tr>
         </tbody>
     </table>
 
-    <h2>Table-3: NASA-Power API</h2>
-    <p>This section displays real-time solar irradiance data fetched from NASA POWER API, including 10 data points from the past 2 days. Data is updated when the ingestion button is triggered.</p>
-    <table id="nasaPowerTable">
+    <h2>Table-3: NASA POWER API</h2>
+    <p>This section displays solar irradiance data from NASA POWER API.</p>
+    <div id="nasaTimestamp" class="mt-2 mb-2" style="font-size: 0.9em; color: #666;"></div>
+    <div class="mb-3">
+        <button id="fetchNasaDatabaseBtn" class="btn btn-success" onclick="fetchNasaDatabase()">
+            Fetch Database
+        </button>
+        <button id="loadNasaLatestBtn" class="btn btn-primary" onclick="loadNasaLatestData()">
+            Latest 10 Rows
+        </button>
+        <button id="loadNasaTopWindBtn" class="btn btn-info" onclick="loadNasaTopWindSpeed()">
+            Top 10 Wind Speed
+        </button>
+        <button id="loadNasaTopIrradianceBtn" class="btn btn-warning" onclick="loadNasaTopIrradiance()">
+            Top 10 Solar Irradiance
+        </button>
+    </div>
+    <div id="nasaDbStatus" class="mt-3" style="display: none;">
+        <div id="nasaDbMessage" class="alert"></div>
+    </div>
+    <table id="nasaTable">
         <thead>
             <tr>
-                <th>RN</th>
+                <th>ID</th>
                 <th>Timestamp</th>
                 <th>Temperature (°C)</th>
                 <th>Humidity (%)</th>
-                <th>Wind Speed (m/s)</th>
-                <th>Cloudiness (%)</th>
-                <th>UV Index</th>
                 <th>Irradiance (W/m²)</th>
+                <th>Wind Speed (m/s)</th>
+                <th>Wind Power Density</th>
+                <th>Solar Energy Yield</th>
                 <th>Source</th>
             </tr>
         </thead>
-        <tbody id="nasaPowerTableBody">
+        <tbody id="nasaTableBody">
             <tr>
-                <td colspan="3" style="text-align: center; color: #666;">Click "Trigger Data Ingestion" to fetch live NASA POWER solar irradiance data</td>
+                <td colspan="9" style="text-align: center; color: #666;">Click "Fetch Database" to load NASA POWER data</td>
             </tr>
         </tbody>
     </table>
 
-    <!-- Manual Ingestion Trigger Section -->
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-12">
-                <h3>Manual Data Ingestion</h3>
-                <p>Click the button below to trigger on-demand data ingestion from sensors and weather APIs.</p>
-                <button id="triggerIngestionBtn" class="btn btn-primary btn-lg" onclick="triggerIngestion()">
-                    <i class="fas fa-play"></i> Trigger Data Ingestion
-                </button>
-                <div id="ingestionStatus" class="mt-3" style="display: none;">
-                    <div id="statusMessage" class="alert"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Phase 8 Steps Section -->
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-12">
-                <h3>Phase 8: Real-Time Data Collection Steps</h3>
-                <p>Follow the step-by-step guide for testing Phase 8 features. Click each button to perform the corresponding action.</p>
-
-                <div class="step-section mb-4">
-                    <h4>Step 1: Prepare Your Environment</h4>
-                    <button id="startFlaskBtn" class="btn btn-primary btn-sm me-2" onclick="startFlaskServer()">
-                        <i class="fas fa-server"></i> Start Flask Web Server
-                    </button>
-                    <button id="launchServerBtn" class="btn btn-success btn-sm me-2" onclick="launchFlaskServer()">
-                        <i class="fas fa-rocket"></i> Launch Flask Server
-                    </button>
-                    <button id="checkPostgresBtn" class="btn btn-info btn-sm me-2" onclick="checkPostgresStatus()">
-                        <i class="fas fa-database"></i> Check PostgreSQL Status
-                    </button>
-                    <button id="verifyDbBtn" class="btn btn-info btn-sm" onclick="verifyDbConnection()">
-                        <i class="fas fa-link"></i> Verify DB Connection
-                    </button>
-                    <div id="envStatus" class="mt-3" style="display: none;">
-                        <div id="envMessage" class="alert"></div>
-                    </div>
-                </div>
-
-                <div class="step-section mb-4">
-                    <h4>Step 2: Test Manual Data Collection</h4>
-                    <p>Manual collection is handled by the "Trigger Data Ingestion" button above.</p>
-                    <button id="fetchOpenWeatherBtn" class="btn btn-primary btn-sm me-2" onclick="fetchOpenWeather()">
-                        <i class="fas fa-cloud-sun"></i> Fetch OpenWeather Data
-                    </button>
-                    <div id="openWeatherStatus" class="mt-3" style="display: none;">
-                        <div id="openWeatherMessage" class="alert"></div>
-                    </div>
-                </div>
-
-                <div class="step-section mb-4">
-                    <h4>Step 3: Test Automatic Data Collection</h4>
-                    <button id="testAutoBtn" class="btn btn-warning btn-sm" onclick="testAutomaticIngestion()">
-                        <i class="fas fa-clock"></i> Test Automatic Ingestion
-                    </button>
-                    <div id="autoStatus" class="mt-3" style="display: none;">
-                        <div id="autoMessage" class="alert"></div>
-                    </div>
-                </div>
-
-                <div class="step-section mb-4">
-                    <h4>Step 4: View Your Data in the Web Interface</h4>
-                    <p>The HTML dashboard is already displayed above. You can interact with the tables and buttons to view your data.</p>
-                </div>
-
-                <div class="step-section mb-4">
-                    <h4>Step 5: Check Logs and Verify Everything Worked</h4>
-                    <button id="viewLogsBtn" class="btn btn-secondary btn-sm me-2" onclick="viewLogs()">
-                        <i class="fas fa-file-alt"></i> View Ingestion Logs
-                    </button>
-                    <button id="finalDbCheckBtn" class="btn btn-secondary btn-sm" onclick="finalDbCheck()">
-                        <i class="fas fa-check-circle"></i> Final DB Check
-                    </button>
-                    <div id="logsStatus" class="mt-3" style="display: none;">
-                        <div id="logsMessage" class="alert"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript for data loading and ingestion trigger -->
     <script>
-        let dataCollection = {};
+        let simData = [];
+        let weatherData = [];
+        let nasaData = [];
         let lastUpdateTimestamp = '';
-        let lastSimData = [];
+        let simRowCount = 0;
+        let nasaRowCount = 0;
 
-        async function loadDataCollection() {
+        // Parse collect1.txt and extract summary info
+        async function loadSimDataFromFile() {
             try {
                 const response = await fetch('/data/collect1.txt');
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error('HTTP error! status: ' + response.status);
                 }
                 const text = await response.text();
-
-                // Parse the file content
                 const lines = text.split('\n');
+                
+                simData = [];
                 let currentSection = '';
-                let timestamp = '';
-
-                // Extract timestamp from first line
-                if (lines[0] && lines[0].startsWith('# Data collection last updated:')) {
-                    timestamp = lines[0].replace('# Data collection last updated: ', '');
-                    lastUpdateTimestamp = timestamp;
-                }
-
-                dataCollection = { sim: [], nasa_power: [], openweather: [] };
-
-                for (let i = 1; i < lines.length; i++) {
+                lastUpdateTimestamp = '';
+                simRowCount = 0;
+                
+                for (let i = 0; i < lines.length; i++) {
                     const line = lines[i].trim();
-                    if (line.startsWith('[') && line.endsWith(']')) {
-                        currentSection = line.slice(1, -1).toLowerCase().replace(' ', '_');
-                    } else if (line && !line.startsWith('timestamp,') && currentSection) {
-                        const parts = line.split(',');
-                        if (parts.length === 5 && currentSection in dataCollection) {
-                            const row = {
-                                timestamp: parts[0],
-                                temperature: parseFloat(parts[1]),
-                                humidity: parseFloat(parts[2]),
-                                irradiance: parseFloat(parts[3]),
-                                wind_speed: parseFloat(parts[4])
-                            };
-                            dataCollection[currentSection].push(row);
+                    
+                    if (line.startsWith('# Data collection last updated:')) {
+                        lastUpdateTimestamp = line.replace('# Data collection last updated: ', '');
+                    }
+                    
+                    if (line.startsWith('# Summary:')) {
+                        const match = line.match(/sim=(\d+)/);
+                        if (match) {
+                            simRowCount = parseInt(match[1]);
                         }
                     }
-                }
+                    
+                    if (line.startsWith('[') && line.endsWith(']')) {
+                        currentSection = line.slice(1, -1).toLowerCase();
+                    }
+                    
+                    if (line && !line.startsWith('#') && !line.startsWith('[') && !line.startsWith('id,')) {
+                        const parts = line.split(',');
+                        if (parts.length >= 9 && currentSection === 'sim') {
+                            simData.push({
+                                id: parts[0] || '',
+                                timestamp: parts[1] || '',
+                                temperature: parseFloat(parts[2]) || 0,
+                                humidity: parseFloat(parts[3]) || 0,
+                                irradiance: parseFloat(parts[4]) || 0,
+                                wind_speed: parseFloat(parts[5]) || 0,
+                                source: parts[6] || 'sim',
+                                wind_power_density: parts[7] || '',
+                                solar_energy_yield: parts[8] || ''
+                            });
+                        }
+                    }
 
-                console.log('Data collection loaded:', dataCollection);
+                }
+                
                 return true;
             } catch (error) {
-                console.error('Error loading data collection:', error);
-                logError('Data Loading', 'File Load Error', `Failed to load data_collection.txt: ${error.message}`, 'Error');
+                console.error('Error loading sim data:', error);
                 return false;
             }
         }
 
-        async function triggerIngestion() {
-            const btn = document.getElementById('triggerIngestionBtn');
-            const statusDiv = document.getElementById('ingestionStatus');
-            const statusMessage = document.getElementById('statusMessage');
-
-            // Disable button and show loading
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-
-            statusDiv.style.display = 'block';
-            statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = 'Triggering data ingestion...';
-
+        // Parse collect2.txt for weather data
+        async function loadWeatherDataFromFile() {
             try {
-                const response = await fetch('/trigger_ingestion', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
+                const response = await fetch('/data/collect2.txt');
+                if (!response.ok) {
+                    throw new Error('HTTP error! status: ' + response.status);
+                }
+                const text = await response.text();
+                const lines = text.split('\n');
+                
+                weatherData = [];
+                let currentSection = '';
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    
+                    if (line.startsWith('[') && line.endsWith(']')) {
+                        currentSection = line.slice(1, -1).toLowerCase();
                     }
-                });
+                    
+                    if (line && !line.startsWith('#') && !line.startsWith('[') && !line.startsWith('id,')) {
+                        const parts = line.split(',');
+                        if (parts.length >= 9 && currentSection === 'weather') {
+                            weatherData.push({
+                                id: parts[0] || '',
+                                timestamp: parts[1] || '',
+                                temperature: parseFloat(parts[2]) || 0,
+                                humidity: parseFloat(parts[3]) || 0,
+                                irradiance: parseFloat(parts[4]) || 0,
+                                wind_speed: parseFloat(parts[5]) || 0,
+                                source: parts[6] || 'openweather',
+                                wind_power_density: parts[7] || '',
+                                solar_energy_yield: parts[8] || ''
+                            });
+                        }
+                    }
 
-                const result = await response.json();
-
-                if (result.success) {
-                    statusMessage.className = 'alert alert-success';
-                    statusMessage.innerHTML = `
-                        <strong>Success!</strong> Data ingestion completed.<br>
-                        - Sensor data generated: ${result.sensor_generated ? 'Yes' : 'No'}<br>
-                        - Weather data fetched: ${result.weather_fetched ? 'Yes' : 'No'}<br>
-                        - New rows added: ${result.ingestion_result.new_rows || 0}
-                    `;
-                } else {
-                    statusMessage.className = 'alert alert-danger';
-                    statusMessage.innerHTML = `<strong>Error:</strong> ${result.error || 'Unknown error occurred'}`;
                 }
-
+                
+                return true;
             } catch (error) {
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = `<strong>Network Error:</strong> ${error.message}`;
-            } finally {
-                // Re-enable button
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-play"></i> Trigger Data Ingestion';
+                console.error('Error loading weather data:', error);
+                return false;
             }
         }
 
-        async function startFlaskServer() {
-            const btn = document.getElementById('startFlaskBtn');
-            const statusDiv = document.getElementById('envStatus');
-            const statusMessage = document.getElementById('envMessage');
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
-            statusDiv.style.display = 'block';
-            statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = 'Starting Flask web server...';
-
+        // Parse collect3.txt for NASA POWER data
+        async function loadNasaDataFromFile() {
             try {
-                // Since we're already on the page, the server is running
-                statusMessage.className = 'alert alert-success';
-                statusMessage.innerHTML = '<strong>Flask Web Server:</strong> Already running (you are viewing this page!)';
-            } catch (error) {
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = `<strong>Error:</strong> ${error.message}`;
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-server"></i> Start Flask Web Server';
-            }
-        }
-
-        async function launchFlaskServer() {
-            const btn = document.getElementById('launchServerBtn');
-            const statusDiv = document.getElementById('envStatus');
-            const statusMessage = document.getElementById('envMessage');
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Launching...';
-            statusDiv.style.display = 'block';
-            statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = 'Launching Flask server...';
-
-            try {
-                // Since we can't start Flask from within Flask, show instructions
-                statusMessage.className = 'alert alert-warning';
-                statusMessage.innerHTML = `<strong>Manual Server Launch Required:</strong><br>
-                    Please open Command Prompt and run:<br>
-                    <code>cd "d:/My Documents/ee/1_Tester_cee/AI/AI-EnergyR5/web"<br>
-                    python ingestion_trigger.py</code><br>
-                    Then refresh this page to access all features.`;
-            } catch (error) {
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = `<strong>Error:</strong> ${error.message}`;
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-rocket"></i> Launch Flask Server';
-            }
-        }
-
-        async function checkPostgresStatus() {
-            const btn = document.getElementById('checkPostgresBtn');
-            const statusDiv = document.getElementById('envStatus');
-            const statusMessage = document.getElementById('envMessage');
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-            statusDiv.style.display = 'block';
-            statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = 'Checking PostgreSQL status...';
-
-            try {
-                const response = await fetch('/check_postgres_status');
-                const result = await response.json();
-
-                if (result.success) {
-                    statusMessage.className = 'alert alert-success';
-                    statusMessage.innerHTML = `<strong>PostgreSQL Status:</strong> ${result.status}<br>${result.message}`;
-                } else {
-                    statusMessage.className = 'alert alert-warning';
-                    statusMessage.innerHTML = `<strong>PostgreSQL Status:</strong> ${result.status}<br>${result.message}`;
+                const response = await fetch('/data/collect3.txt');
+                if (!response.ok) {
+                    throw new Error('HTTP error! status: ' + response.status);
                 }
+                const text = await response.text();
+                const lines = text.split('\n');
+                
+                nasaData = [];
+                let currentSection = '';
+                nasaRowCount = 0;
+                
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    
+                    if (line.startsWith('# Summary:')) {
+                        const match = line.match(/nasa_power=(\d+)/);
+                        if (match) {
+                            nasaRowCount = parseInt(match[1]);
+                        }
+                    }
+                    
+                    if (line.startsWith('[') && line.endsWith(']')) {
+                        currentSection = line.slice(1, -1).toLowerCase();
+                    }
+                    
+                    if (line && !line.startsWith('#') && !line.startsWith('[') && !line.startsWith('id,')) {
+                        const parts = line.split(',');
+                        if (parts.length >= 9 && currentSection === 'nasa_power') {
+                            nasaData.push({
+                                id: parts[0] || '',
+                                timestamp: parts[1] || '',
+                                temperature: parseFloat(parts[2]) || 0,
+                                humidity: parseFloat(parts[3]) || 0,
+                                irradiance: parseFloat(parts[4]) || 0,
+                                wind_speed: parseFloat(parts[5]) || 0,
+                                source: parts[6] || 'nasa_power',
+                                wind_power_density: parts[7] || '',
+                                solar_energy_yield: parts[8] || ''
+                            });
+                        }
+                    }
+
+                }
+                
+                return true;
             } catch (error) {
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = `<strong>Error:</strong> ${error.message}`;
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-database"></i> Check PostgreSQL Status';
+                console.error('Error loading NASA data:', error);
+                return false;
             }
         }
 
-        async function verifyDbConnection() {
-            const btn = document.getElementById('verifyDbBtn');
-            const statusDiv = document.getElementById('envStatus');
-            const statusMessage = document.getElementById('envMessage');
+        // Fetch data from database and update collect1.txt
+        async function fetchDatabase() {
+            const btn = document.getElementById('fetchDatabaseBtn');
+            const timestampDiv = document.getElementById('simTimestamp');
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
-            statusDiv.style.display = 'block';
-            statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = 'Verifying database connection...';
+            btn.innerHTML = 'Fetching...';
+            timestampDiv.innerHTML = 'Fetching data from database...';
 
             try {
-                const response = await fetch('/verify_db_connection');
+                const response = await fetch('/fetch_sim_data_from_db');
                 const result = await response.json();
 
                 if (result.success) {
-                    statusMessage.className = 'alert alert-success';
-                    statusMessage.innerHTML = `<strong>Database Connection:</strong> Success<br><pre>${result.output}</pre>`;
+                    await loadSimDataFromFile();
+                    timestampDiv.innerHTML = 'Last updated: ' + lastUpdateTimestamp + ' | Rows: ' + simRowCount;
+                    await loadLatestData();
                 } else {
-                    statusMessage.className = 'alert alert-danger';
-                    statusMessage.innerHTML = `<strong>Database Connection:</strong> Failed<br><pre>${result.error}</pre>`;
+                    timestampDiv.innerHTML = 'Error: ' + (result.error || 'Failed to fetch data');
                 }
             } catch (error) {
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                timestampDiv.innerHTML = 'Error: ' + error.message;
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-link"></i> Verify DB Connection';
+                btn.innerHTML = 'Fetch Database';
             }
         }
 
-        async function testAutomaticIngestion() {
-            const btn = document.getElementById('testAutoBtn');
-            const statusDiv = document.getElementById('autoStatus');
-            const statusMessage = document.getElementById('autoMessage');
+        // Fetch weather data from database
+        async function fetchWeatherDatabase() {
+            const btn = document.getElementById('fetchWeatherDatabaseBtn');
+            const statusDiv = document.getElementById('weatherDbStatus');
+            const statusMessage = document.getElementById('weatherDbMessage');
+            const timestampDiv = document.getElementById('weatherTimestamp');
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+            btn.innerHTML = 'Fetching...';
             statusDiv.style.display = 'block';
             statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = 'Testing automatic ingestion...';
+            statusMessage.innerHTML = 'Fetching weather data from database...';
 
             try {
-                const response = await fetch('/test_automatic_ingestion', { method: 'POST' });
+                const response = await fetch('/fetch_weather_data_from_db');
                 const result = await response.json();
 
                 if (result.success) {
+                    await loadWeatherDataFromFile();
                     statusMessage.className = 'alert alert-success';
-                    statusMessage.innerHTML = `<strong>Automatic Ingestion Result:</strong><br>
-                        Message: ${result.message || 'N/A'}<br>
-                        Total Rows: ${result.total_rows || 0}<br>
-                        Time Range: ${result.time_range || 'N/A'}`;
-                } else {
-                    statusMessage.className = 'alert alert-danger';
-                    statusMessage.innerHTML = `<strong>Error:</strong> ${result.error}`;
-                }
-            } catch (error) {
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = `<strong>Error:</strong> ${error.message}`;
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-clock"></i> Test Automatic Ingestion';
-            }
-        }
-
-
-
-        function viewHtmlTable() {
-            const statusDiv = document.getElementById('viewStatus');
-            const statusMessage = document.getElementById('viewMessage');
-
-            statusDiv.style.display = 'block';
-            statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = 'HTML table is already displayed above. You can also run <code>python generate_html_table.py</code> for a separate view.';
-        }
-
-        async function viewLogs() {
-            const btn = document.getElementById('viewLogsBtn');
-            const statusDiv = document.getElementById('logsStatus');
-            const statusMessage = document.getElementById('logsMessage');
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-            statusDiv.style.display = 'block';
-            statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = 'Loading ingestion logs...';
-
-            try {
-                const response = await fetch('/view_logs');
-                const result = await response.json();
-
-                if (result.success) {
-                    statusMessage.className = 'alert alert-success';
-                    statusMessage.innerHTML = `<strong>Ingestion Logs:</strong><br><pre style="max-height: 300px; overflow-y: auto;">${result.logs}</pre>`;
+                    statusMessage.innerHTML = 'Weather Data Fetched: ' + result.rows_fetched + ' rows';
+                    timestampDiv.innerHTML = 'Last updated: ' + (result.summary ? result.summary.time_range : 'Just now');
+                    await loadWeatherLatestData();
                 } else {
                     statusMessage.className = 'alert alert-warning';
-                    statusMessage.innerHTML = `<strong>Logs:</strong> ${result.error}`;
+                    statusMessage.innerHTML = 'Error: ' + (result.error || 'Failed to fetch');
                 }
             } catch (error) {
                 statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                statusMessage.innerHTML = 'Error: ' + error.message;
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-file-alt"></i> View Ingestion Logs';
+                btn.innerHTML = 'Fetch Database';
             }
         }
 
-        async function fetchOpenWeather() {
-            const btn = document.getElementById('fetchOpenWeatherBtn');
-            const statusDiv = document.getElementById('openWeatherStatus');
-            const statusMessage = document.getElementById('openWeatherMessage');
+        // Fetch NASA POWER data from database
+        async function fetchNasaDatabase() {
+            const btn = document.getElementById('fetchNasaDatabaseBtn');
+            const statusDiv = document.getElementById('nasaDbStatus');
+            const statusMessage = document.getElementById('nasaDbMessage');
+            const timestampDiv = document.getElementById('nasaTimestamp');
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
+            btn.innerHTML = 'Fetching...';
             statusDiv.style.display = 'block';
             statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = 'Fetching weather data from OpenWeather API...';
+            statusMessage.innerHTML = 'Fetching NASA POWER data from database...';
 
             try {
-                const response = await fetch('/fetch_openweather', { method: 'POST' });
+                const response = await fetch('/fetch_nasa_data_from_db');
                 const result = await response.json();
 
                 if (result.success) {
+                    await loadNasaDataFromFile();
                     statusMessage.className = 'alert alert-success';
-                    statusMessage.innerHTML = `<strong>OpenWeather API Fetch:</strong> Success<br>
-                        - Weather data fetched: ${result.weather_fetched ? 'Yes' : 'No'}<br>
-                        - Data points collected: ${result.weather_data_points || 0}<br>
-                        - Rows inserted into database: ${result.weather_rows_inserted || 0}`;
+                    statusMessage.innerHTML = 'NASA Data Fetched: ' + result.rows_fetched + ' rows';
+                    timestampDiv.innerHTML = 'Last updated: ' + (result.summary ? result.summary.time_range : 'Just now') + ' | Rows: ' + nasaRowCount;
+                    await loadNasaLatestData();
                 } else {
-                    statusMessage.className = 'alert alert-danger';
-                    statusMessage.innerHTML = `<strong>Error:</strong> ${result.error}`;
+                    statusMessage.className = 'alert alert-warning';
+                    statusMessage.innerHTML = 'Error: ' + (result.error || 'Failed to fetch');
                 }
             } catch (error) {
                 statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = `<strong>Network Error:</strong> ${error.message}`;
+                statusMessage.innerHTML = 'Error: ' + error.message;
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-cloud-sun"></i> Fetch OpenWeather Data';
+                btn.innerHTML = 'Fetch Database';
             }
         }
 
-        async function finalDbCheck() {
-            const btn = document.getElementById('finalDbCheckBtn');
-            const statusDiv = document.getElementById('logsStatus');
-            const statusMessage = document.getElementById('logsMessage');
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-            statusDiv.style.display = 'block';
-            statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = 'Performing final database check...';
-
-            try {
-                const response = await fetch('/final_db_check');
-                const result = await response.json();
-
-                if (result.success) {
-                    statusMessage.className = 'alert alert-success';
-                    statusMessage.innerHTML = `<strong>Final Database Check:</strong> Success<br><pre>${result.output}</pre>`;
-                } else {
-                    statusMessage.className = 'alert alert-danger';
-                    statusMessage.innerHTML = `<strong>Final Database Check:</strong> Failed<br><pre>${result.error}</pre>`;
-                }
-            } catch (error) {
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = `<strong>Error:</strong> ${error.message}`;
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-check-circle"></i> Final DB Check';
-            }
-        }
-
+        // Load and display latest 10 sim rows
         async function loadLatestData() {
             const btn = document.getElementById('loadLatestBtn');
             const tableBody = document.getElementById('simTableBody');
             const timestampDiv = document.getElementById('simTimestamp');
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            btn.innerHTML = 'Loading...';
 
             try {
-                const success = await loadDataCollection();
-                if (success && dataCollection.sim && dataCollection.sim.length > 0) {
-                    // Display timestamp
+                const success = await loadSimDataFromFile();
+                if (success && simData.length > 0) {
                     if (lastUpdateTimestamp) {
-                        timestampDiv.innerHTML = `<strong>Last updated:</strong> ${lastUpdateTimestamp}`;
+                        timestampDiv.innerHTML = 'Last updated: ' + lastUpdateTimestamp + ' | Rows: ' + simRowCount;
                     }
 
-                    // Sort sim data by timestamp descending and get the latest 10 rows
-                    const sortedSimData = dataCollection.sim.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                    const last10Rows = sortedSimData.slice(0, 10);
+                    const sortedData = simData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    const last10Rows = sortedData.slice(0, 10);
 
-                    // Populate the table
-                    tableBody.innerHTML = last10Rows.map((row, index) => `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${row.timestamp || 'N/A'}</td>
-                            <td>${row.temperature !== null && row.temperature !== undefined ? row.temperature.toFixed(2) : 'N/A'}</td>
-                            <td>${row.humidity !== null && row.humidity !== undefined ? row.humidity.toFixed(2) : 'N/A'}</td>
-                            <td>${row.irradiance !== null && row.irradiance !== undefined ? row.irradiance.toFixed(2) : 'N/A'}</td>
-                            <td>${row.wind_speed !== null && row.wind_speed !== undefined ? row.wind_speed.toFixed(2) : 'N/A'}</td>
-                        </tr>
-                    `).join('');
-
-                    console.log('Latest sim data loaded');
+                    tableBody.innerHTML = last10Rows.map((row, index) => 
+                        '<tr>' +
+                        '<td>' + (row.id || index + 1) + '</td>' +
+                        '<td>' + (row.timestamp || 'N/A') + '</td>' +
+                        '<td>' + (row.temperature ? row.temperature.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.humidity ? row.humidity.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.irradiance ? row.irradiance.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_speed ? row.wind_speed.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_power_density || '') + '</td>' +
+                        '<td>' + (row.solar_energy_yield || '') + '</td>' +
+                        '<td>' + (row.source || 'sim') + '</td>' +
+                        '</tr>'
+                    ).join('');
                 } else {
-                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No sim data found in file</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">No sim data found</td></tr>';
                 }
             } catch (error) {
-                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">Error loading sim data</td></tr>';
-                logError('Sim Data Loading', 'Load Error', error.message, 'Error');
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">Error loading data</td></tr>';
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-clock"></i> Latest 10 Rows';
+                btn.innerHTML = 'Latest 10 Rows';
             }
         }
 
+        // Load and display top 10 wind speed sim rows
         async function loadTopWindSpeed() {
             const btn = document.getElementById('loadTopWindBtn');
             const tableBody = document.getElementById('simTableBody');
             const timestampDiv = document.getElementById('simTimestamp');
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            btn.innerHTML = 'Loading...';
 
             try {
-                const success = await loadDataCollection();
-                if (success && dataCollection.sim && dataCollection.sim.length > 0) {
-                    // Display timestamp
+                const success = await loadSimDataFromFile();
+                if (success && simData.length > 0) {
                     if (lastUpdateTimestamp) {
-                        timestampDiv.innerHTML = `<strong>Last updated:</strong> ${lastUpdateTimestamp}`;
+                        timestampDiv.innerHTML = 'Last updated: ' + lastUpdateTimestamp + ' | Rows: ' + simRowCount;
                     }
 
-                    // Sort sim data by wind speed descending and get the top 10 rows
-                    const sortedSimData = dataCollection.sim.sort((a, b) => b.wind_speed - a.wind_speed);
-                    const top10Rows = sortedSimData.slice(0, 10);
+                    const sortedData = simData.sort((a, b) => b.wind_speed - a.wind_speed);
+                    const top10Rows = sortedData.slice(0, 10);
 
-                    // Populate the table
-                    tableBody.innerHTML = top10Rows.map((row, index) => `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${row.timestamp || 'N/A'}</td>
-                            <td>${row.temperature !== null && row.temperature !== undefined ? row.temperature.toFixed(2) : 'N/A'}</td>
-                            <td>${row.humidity !== null && row.humidity !== undefined ? row.humidity.toFixed(2) : 'N/A'}</td>
-                            <td>${row.irradiance !== null && row.irradiance !== undefined ? row.irradiance.toFixed(2) : 'N/A'}</td>
-                            <td>${row.wind_speed !== null && row.wind_speed !== undefined ? row.wind_speed.toFixed(2) : 'N/A'}</td>
-                        </tr>
-                    `).join('');
-
-                    console.log('Top wind speed sim data loaded');
+                    tableBody.innerHTML = top10Rows.map((row, index) => 
+                        '<tr>' +
+                        '<td>' + (row.id || index + 1) + '</td>' +
+                        '<td>' + (row.timestamp || 'N/A') + '</td>' +
+                        '<td>' + (row.temperature ? row.temperature.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.humidity ? row.humidity.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.irradiance ? row.irradiance.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_speed ? row.wind_speed.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_power_density || '') + '</td>' +
+                        '<td>' + (row.solar_energy_yield || '') + '</td>' +
+                        '<td>' + (row.source || 'sim') + '</td>' +
+                        '</tr>'
+                    ).join('');
                 } else {
-                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No sim data found in file</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">No sim data found</td></tr>';
                 }
             } catch (error) {
-                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">Error loading sim data</td></tr>';
-                logError('Sim Data Loading', 'Load Error', error.message, 'Error');
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">Error loading data</td></tr>';
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-wind"></i> Top 10 Wind Speed';
+                btn.innerHTML = 'Top 10 Wind Speed';
             }
         }
 
+        // Load and display top 10 irradiance sim rows
         async function loadTopIrradiance() {
             const btn = document.getElementById('loadTopIrradianceBtn');
             const tableBody = document.getElementById('simTableBody');
             const timestampDiv = document.getElementById('simTimestamp');
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            btn.innerHTML = 'Loading...';
 
             try {
-                const success = await loadDataCollection();
-                if (success && dataCollection.sim && dataCollection.sim.length > 0) {
-                    // Display timestamp
+                const success = await loadSimDataFromFile();
+                if (success && simData.length > 0) {
                     if (lastUpdateTimestamp) {
-                        timestampDiv.innerHTML = `<strong>Last updated:</strong> ${lastUpdateTimestamp}`;
+                        timestampDiv.innerHTML = 'Last updated: ' + lastUpdateTimestamp + ' | Rows: ' + simRowCount;
                     }
 
-                    // Sort sim data by irradiance descending and get the top 10 rows
-                    const sortedSimData = dataCollection.sim.sort((a, b) => b.irradiance - a.irradiance);
-                    const top10Rows = sortedSimData.slice(0, 10);
+                    const sortedData = simData.sort((a, b) => b.irradiance - a.irradiance);
+                    const top10Rows = sortedData.slice(0, 10);
 
-                    // Populate the table
-                    tableBody.innerHTML = top10Rows.map((row, index) => `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${row.timestamp}</td>
-                            <td>${row.temperature.toFixed(2)}</td>
-                            <td>${row.humidity.toFixed(2)}</td>
-                            <td>${row.irradiance.toFixed(2)}</td>
-                            <td>${row.wind_speed.toFixed(2)}</td>
-                        </tr>
-                    `).join('');
-
-                    console.log('Top irradiance sim data loaded');
+                    tableBody.innerHTML = top10Rows.map((row, index) => 
+                        '<tr>' +
+                        '<td>' + (row.id || index + 1) + '</td>' +
+                        '<td>' + (row.timestamp || 'N/A') + '</td>' +
+                        '<td>' + (row.temperature ? row.temperature.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.humidity ? row.humidity.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.irradiance ? row.irradiance.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_speed ? row.wind_speed.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_power_density || '') + '</td>' +
+                        '<td>' + (row.solar_energy_yield || '') + '</td>' +
+                        '<td>' + (row.source || 'sim') + '</td>' +
+                        '</tr>'
+                    ).join('');
                 } else {
-                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No sim data found in file</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">No sim data found</td></tr>';
                 }
             } catch (error) {
-                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">Error loading sim data</td></tr>';
-                logError('Sim Data Loading', 'Load Error', error.message, 'Error');
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">Error loading data</td></tr>';
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-sun"></i> Top 10 Solar Irradiance';
+                btn.innerHTML = 'Top 10 Solar Irradiance';
             }
         }
 
-        async function loadWeatherFromFile() {
-            const btn = document.getElementById('loadWeatherFromDbBtn');
-            const statusDiv = document.getElementById('weatherDbStatus');
-            const statusMessage = document.getElementById('weatherDbMessage');
-            const tableBody = document.getElementById('weatherTableBody');
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-            statusDiv.style.display = 'block';
-            statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = 'Loading weather data from file...';
-
-            try {
-                const success = await loadDataCollection();
-                if (success && dataCollection.group_openweather && dataCollection.group_openweather.length > 0) {
-                    statusMessage.className = 'alert alert-success';
-                    statusMessage.innerHTML = `<strong>Weather Data Loaded:</strong> ${dataCollection.group_openweather.length} records retrieved from file`;
-
-                    // Populate the table
-                    tableBody.innerHTML = dataCollection.group_openweather.map(row => `
-                        <tr>
-                            <td>${row.timestamp}</td>
-                            <td>${row.temperature.toFixed(2)}</td>
-                            <td>${row.humidity.toFixed(2)}</td>
-                            <td>${row.wind_speed.toFixed(2)}</td>
-                            <td>group openweather</td>
-                        </tr>
-                    `).join('');
-                } else {
-                    statusMessage.className = 'alert alert-warning';
-                    statusMessage.innerHTML = '<strong>No Data Found:</strong> No weather data available in file';
-                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">No weather data found in file</td></tr>';
-                }
-            } catch (error) {
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = `<strong>Error:</strong> ${error.message}`;
-                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">Error loading data from file</td></tr>';
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-database"></i> Load Weather Data from File';
-            }
-        }
-
-        async function loadNasaPowerData() {
-            const tableBody = document.getElementById('nasaPowerTableBody');
-
-            try {
-                const success = await loadDataCollection();
-                if (success && dataCollection.nasa_power && dataCollection.nasa_power.length > 0) {
-                    // Populate the table
-                    tableBody.innerHTML = dataCollection.nasa_power.map(row => `
-                        <tr>
-                            <td>${row.timestamp}</td>
-                            <td>${row.irradiance.toFixed(2)}</td>
-                            <td>nasa_power</td>
-                        </tr>
-                    `).join('');
-                } else {
-                    tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #666;">No NASA Power data found in file</td></tr>';
-                }
-            } catch (error) {
-                tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #666;">Error loading NASA Power data</td></tr>';
-                logError('NASA Power Data Loading', 'Load Error', error.message, 'Error');
-            }
-        }
-
-        async function fetchDatabase() {
-            const btn = document.getElementById('fetchDatabaseBtn');
-            const statusDiv = document.getElementById('simTimestamp');
-            const tableBody = document.getElementById('simTableBody');
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
-            statusDiv.innerHTML = '<strong>Fetching sim data from database...</strong>';
-
-            try {
-                const response = await fetch('/fetch_sim_data_from_db');
-                const result = await response.json();
-
-                if (result.success && result.data && result.data.length > 0) {
-                    // Display summary info and timestamp
-                    const currentTime = new Date().toLocaleString();
-                    let summaryHtml = '';
-
-                    if (result.summary) {
-                        summaryHtml = `
-                            <div style="margin-bottom: 10px; padding: 10px; background-color: #f0f8ff; border-radius: 5px; border: 1px solid #add8e6;">
-                                <strong>Summary Info:</strong><br>
-                                Total Records: ${result.summary.total_rows}<br>
-                                Time Range: ${result.summary.time_range}<br>
-                                Temperature: Avg=${result.summary.temperature.avg}°C, Min=${result.summary.temperature.min}°C, Max=${result.summary.temperature.max}°C<br>
-                                Humidity: Avg=${result.summary.humidity.avg}%, Min=${result.summary.humidity.min}%, Max=${result.summary.humidity.max}%<br>
-                                Irradiance: Avg=${result.summary.irradiance.avg} W/m², Min=${result.summary.irradiance.min} W/m², Max=${result.summary.irradiance.max} W/m²<br>
-                                Wind Speed: Avg=${result.summary.wind_speed.avg} m/s, Min=${result.summary.wind_speed.min} m/s, Max=${result.summary.wind_speed.max} m/s
-                            </div>
-                        `;
-                    }
-
-                    statusDiv.innerHTML = `${summaryHtml}<strong>Sim data fetched from database:</strong> ${result.rows_fetched} rows (Last updated: ${currentTime})<br><em>collect1.txt updated. Use other buttons to view data in table.</em>`;
-
-                    console.log('Sim data fetched from database and collect1.txt updated');
-                } else {
-                    statusDiv.innerHTML = `<strong>Error:</strong> ${result.error || 'No sim data found in database'}`;
-                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No sim data found in database</td></tr>';
-                }
-            } catch (error) {
-                statusDiv.innerHTML = `<strong>Network Error:</strong> ${error.message}`;
-                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">Error fetching data from database</td></tr>';
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-database"></i> Fetch Database';
-            }
-        }
-
-        async function fetchWeatherDatabase() {
-            const btn = document.getElementById('fetchWeatherDatabaseBtn');
-            const statusDiv = document.getElementById('weatherTimestamp');
-            const tableBody = document.getElementById('weatherTableBody');
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching...';
-            statusDiv.innerHTML = '<strong>Fetching weather data from database...</strong>';
-
-            try {
-                const response = await fetch('/fetch_weather_data_from_db');
-                const result = await response.json();
-
-                if (result.success && result.data && result.data.length > 0) {
-                    // Display summary info and timestamp
-                    const currentTime = new Date().toLocaleString();
-                    let summaryHtml = '';
-
-                    if (result.summary) {
-                        summaryHtml = `
-                            <div style="margin-bottom: 10px; padding: 10px; background-color: #f0f8ff; border-radius: 5px; border: 1px solid #add8e6;">
-                                <strong>Summary Info:</strong><br>
-                                Total Records: ${result.summary.total_rows}<br>
-                                Time Range: ${result.summary.time_range}<br>
-                                Temperature: Avg=${result.summary.temperature.avg}°C, Min=${result.summary.temperature.min}°C, Max=${result.summary.temperature.max}°C<br>
-                                Humidity: Avg=${result.summary.humidity.avg}%, Min=${result.summary.humidity.min}%, Max=${result.summary.humidity.max}%<br>
-                                Irradiance: Avg=${result.summary.irradiance.avg} W/m², Min=${result.summary.irradiance.min} W/m², Max=${result.summary.irradiance.max} W/m²<br>
-                                Wind Speed: Avg=${result.summary.wind_speed.avg} m/s, Min=${result.summary.wind_speed.min} m/s, Max=${result.summary.wind_speed.max} m/s
-                            </div>
-                        `;
-                    }
-
-                    statusDiv.innerHTML = `${summaryHtml}<strong>Weather data fetched from database:</strong> ${result.rows_fetched} rows (Last updated: ${currentTime})<br><em>collect2.txt updated. Use other buttons to view data in table.</em>`;
-
-                    console.log('Weather data fetched from database and collect2.txt updated');
-                } else {
-                    statusDiv.innerHTML = `<strong>Error:</strong> ${result.error || 'No weather data found in database'}`;
-                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">No weather data found in database</td></tr>';
-                }
-            } catch (error) {
-                statusDiv.innerHTML = `<strong>Network Error:</strong> ${error.message}`;
-                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">Error fetching data from database</td></tr>';
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-database"></i> Fetch Database';
-            }
-        }
-
-        async function loadWeatherDataCollection() {
-            try {
-                const response = await fetch('/data/collect2.txt');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const text = await response.text();
-
-                // Parse the file content
-                const lines = text.split('\n');
-                let currentSection = '';
-                let timestamp = '';
-
-                // Extract timestamp from first line
-                if (lines[0] && lines[0].startsWith('# Data collection last updated:')) {
-                    timestamp = lines[0].replace('# Data collection last updated: ', '');
-                }
-
-                let weatherData = [];
-
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (line.startsWith('[') && line.endsWith(']')) {
-                        currentSection = line.slice(1, -1).toLowerCase().replace(' ', '_');
-                    } else if (line && !line.startsWith('timestamp,') && currentSection === 'weather') {
-                        const parts = line.split(',');
-                        if (parts.length === 6) {
-                            const row = {
-                                timestamp: parts[0],
-                                temperature: parseFloat(parts[1]),
-                                humidity: parseFloat(parts[2]),
-                                irradiance: parseFloat(parts[3]),
-                                wind_speed: parseFloat(parts[4]),
-                                source: parts[5]
-                            };
-                            weatherData.push(row);
-                        }
-                    }
-                }
-
-                return { weather: weatherData, timestamp: timestamp };
-            } catch (error) {
-                console.error('Error loading weather data collection:', error);
-                logError('Weather Data Loading', 'File Load Error', `Failed to load collect2.txt: ${error.message}`, 'Error');
-                return { weather: [], timestamp: '' };
-            }
-        }
-
+        // Load and display latest 10 weather rows
         async function loadWeatherLatestData() {
             const btn = document.getElementById('loadWeatherLatestBtn');
             const tableBody = document.getElementById('weatherTableBody');
             const timestampDiv = document.getElementById('weatherTimestamp');
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            btn.innerHTML = 'Loading...';
 
             try {
-                const dataCollection = await loadWeatherDataCollection();
-                if (dataCollection.weather && dataCollection.weather.length > 0) {
-                    // Display timestamp
-                    if (dataCollection.timestamp) {
-                        timestampDiv.innerHTML = `<strong>Last updated:</strong> ${dataCollection.timestamp}`;
-                    }
+                const success = await loadWeatherDataFromFile();
+                if (success && weatherData.length > 0) {
+                    const sortedData = weatherData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    const last10Rows = sortedData.slice(0, 10);
 
-                    // Sort weather data by timestamp descending and get the latest 10 rows
-                    const sortedWeatherData = dataCollection.weather.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                    const last10Rows = sortedWeatherData.slice(0, 10);
-
-                    // Populate the table
-                    tableBody.innerHTML = last10Rows.map((row, index) => `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${row.timestamp || 'N/A'}</td>
-                            <td>${row.temperature !== null && row.temperature !== undefined ? row.temperature.toFixed(2) : 'N/A'}</td>
-                            <td>${row.humidity !== null && row.humidity !== undefined ? row.humidity.toFixed(2) : 'N/A'}</td>
-                            <td>${row.irradiance !== null && row.irradiance !== undefined ? row.irradiance.toFixed(2) : 'N/A'}</td>
-                            <td>${row.wind_speed !== null && row.wind_speed !== undefined ? row.wind_speed.toFixed(2) : 'N/A'}</td>
-                            <td>${row.wind_power_density !== null && row.wind_power_density !== undefined ? row.wind_power_density.toFixed(2) : 'N/A'}</td>
-                            <td>${row.solar_energy_yield !== null && row.solar_energy_yield !== undefined ? row.solar_energy_yield.toFixed(2) : 'N/A'}</td>
-                            <td>${row.source || 'N/A'}</td>
-                        </tr>
-                    `).join('');
-
-                    console.log('Latest weather data loaded');
+                    tableBody.innerHTML = last10Rows.map((row, index) => 
+                        '<tr>' +
+                        '<td>' + (row.id || index + 1) + '</td>' +
+                        '<td>' + (row.timestamp || 'N/A') + '</td>' +
+                        '<td>' + (row.temperature ? row.temperature.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.humidity ? row.humidity.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.irradiance ? row.irradiance.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_speed ? row.wind_speed.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_power_density || '') + '</td>' +
+                        '<td>' + (row.solar_energy_yield || '') + '</td>' +
+                        '<td>' + (row.source || 'openweather') + '</td>' +
+                        '</tr>'
+                    ).join('');
                 } else {
-                    tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">No weather data found in file</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">No weather data found</td></tr>';
                 }
             } catch (error) {
-                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">Error loading weather data</td></tr>';
-                logError('Weather Data Loading', 'Load Error', error.message, 'Error');
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">Error loading weather data</td></tr>';
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-clock"></i> Latest 10 Rows';
+                btn.innerHTML = 'Latest 10 Rows';
             }
         }
 
+        // Load and display top 10 wind speed weather rows
         async function loadWeatherTopWindSpeed() {
             const btn = document.getElementById('loadWeatherTopWindBtn');
             const tableBody = document.getElementById('weatherTableBody');
-            const timestampDiv = document.getElementById('weatherTimestamp');
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            btn.innerHTML = 'Loading...';
 
             try {
-                const dataCollection = await loadWeatherDataCollection();
-                if (dataCollection.weather && dataCollection.weather.length > 0) {
-                    // Display timestamp
-                    if (dataCollection.timestamp) {
-                        timestampDiv.innerHTML = `<strong>Last updated:</strong> ${dataCollection.timestamp}`;
-                    }
+                const success = await loadWeatherDataFromFile();
+                if (success && weatherData.length > 0) {
+                    const sortedData = weatherData.sort((a, b) => b.wind_speed - a.wind_speed);
+                    const top10Rows = sortedData.slice(0, 10);
 
-                    // Sort weather data by wind speed descending and get the top 10 rows
-                    const sortedWeatherData = dataCollection.weather.sort((a, b) => b.wind_speed - a.wind_speed);
-                    const top10Rows = sortedWeatherData.slice(0, 10);
-
-                    // Populate the table
-                    tableBody.innerHTML = top10Rows.map((row, index) => `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${row.timestamp || 'N/A'}</td>
-                            <td>${row.temperature !== null && row.temperature !== undefined ? row.temperature.toFixed(2) : 'N/A'}</td>
-                            <td>${row.humidity !== null && row.humidity !== undefined ? row.humidity.toFixed(2) : 'N/A'}</td>
-                            <td>${row.irradiance !== null && row.irradiance !== undefined ? row.irradiance.toFixed(2) : 'N/A'}</td>
-                            <td>${row.wind_speed !== null && row.wind_speed !== undefined ? row.wind_speed.toFixed(2) : 'N/A'}</td>
-                            <td>N/A</td>
-                            <td>N/A</td>
-                            <td>${row.source || 'N/A'}</td>
-                        </tr>
-                    `).join('');
-
-                    console.log('Top wind speed weather data loaded');
+                    tableBody.innerHTML = top10Rows.map((row, index) => 
+                        '<tr>' +
+                        '<td>' + (row.id || index + 1) + '</td>' +
+                        '<td>' + (row.timestamp || 'N/A') + '</td>' +
+                        '<td>' + (row.temperature ? row.temperature.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.humidity ? row.humidity.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.irradiance ? row.irradiance.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_speed ? row.wind_speed.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_power_density || '') + '</td>' +
+                        '<td>' + (row.solar_energy_yield || '') + '</td>' +
+                        '<td>' + (row.source || 'openweather') + '</td>' +
+                        '</tr>'
+                    ).join('');
                 } else {
-                    tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">No weather data found in file</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">No weather data found</td></tr>';
                 }
             } catch (error) {
-                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">Error loading weather data</td></tr>';
-                logError('Weather Data Loading', 'Load Error', error.message, 'Error');
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">Error loading weather data</td></tr>';
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-wind"></i> Top 10 Wind Speed';
+                btn.innerHTML = 'Top 10 Wind Speed';
             }
         }
 
+        // Load and display top 10 irradiance weather rows
         async function loadWeatherTopIrradiance() {
             const btn = document.getElementById('loadWeatherTopIrradianceBtn');
             const tableBody = document.getElementById('weatherTableBody');
-            const timestampDiv = document.getElementById('weatherTimestamp');
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            btn.innerHTML = 'Loading...';
 
             try {
-                const dataCollection = await loadWeatherDataCollection();
-                if (dataCollection.weather && dataCollection.weather.length > 0) {
-                    // Display timestamp
-                    if (dataCollection.timestamp) {
-                        timestampDiv.innerHTML = `<strong>Last updated:</strong> ${dataCollection.timestamp}`;
-                    }
+                const success = await loadWeatherDataFromFile();
+                if (success && weatherData.length > 0) {
+                    const sortedData = weatherData.sort((a, b) => b.irradiance - a.irradiance);
+                    const top10Rows = sortedData.slice(0, 10);
 
-                    // Sort weather data by irradiance descending and get the top 10 rows
-                    const sortedWeatherData = dataCollection.weather.sort((a, b) => b.irradiance - a.irradiance);
-                    const top10Rows = sortedWeatherData.slice(0, 10);
-
-                    // Populate the table
-                    tableBody.innerHTML = top10Rows.map((row, index) => `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${row.timestamp || 'N/A'}</td>
-                            <td>${row.temperature !== null && row.temperature !== undefined ? row.temperature.toFixed(2) : 'N/A'}</td>
-                            <td>${row.humidity !== null && row.humidity !== undefined ? row.humidity.toFixed(2) : 'N/A'}</td>
-                            <td>${row.irradiance !== null && row.irradiance !== undefined ? row.irradiance.toFixed(2) : 'N/A'}</td>
-                            <td>${row.wind_speed !== null && row.wind_speed !== undefined ? row.wind_speed.toFixed(2) : 'N/A'}</td>
-                            <td>N/A</td>
-                            <td>N/A</td>
-                            <td>${row.source || 'N/A'}</td>
-                        </tr>
-                    `).join('');
-
-                    console.log('Top irradiance weather data loaded');
+                    tableBody.innerHTML = top10Rows.map((row, index) => 
+                        '<tr>' +
+                        '<td>' + (row.id || index + 1) + '</td>' +
+                        '<td>' + (row.timestamp || 'N/A') + '</td>' +
+                        '<td>' + (row.temperature ? row.temperature.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.humidity ? row.humidity.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.irradiance ? row.irradiance.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_speed ? row.wind_speed.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_power_density || '') + '</td>' +
+                        '<td>' + (row.solar_energy_yield || '') + '</td>' +
+                        '<td>' + (row.source || 'openweather') + '</td>' +
+                        '</tr>'
+                    ).join('');
                 } else {
-                    tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">No weather data found in file</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">No weather data found</td></tr>';
                 }
             } catch (error) {
-                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #666;">Error loading weather data</td></tr>';
-                logError('Weather Data Loading', 'Load Error', error.message, 'Error');
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">Error loading weather data</td></tr>';
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-sun"></i> Top 10 Solar Irradiance';
+                btn.innerHTML = 'Top 10 Solar Irradiance';
             }
         }
 
-        async function loadWeatherFromDb() {
-            const btn = document.getElementById('loadWeatherFromDbBtn');
-            const statusDiv = document.getElementById('weatherDbStatus');
-            const statusMessage = document.getElementById('weatherDbMessage');
-            const tableBody = document.getElementById('weatherTableBody');
+        // Load and display latest 10 NASA POWER rows
+        async function loadNasaLatestData() {
+            const btn = document.getElementById('loadNasaLatestBtn');
+            const tableBody = document.getElementById('nasaTableBody');
+            const timestampDiv = document.getElementById('nasaTimestamp');
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-            statusDiv.style.display = 'block';
-            statusMessage.className = 'alert alert-info';
-            statusMessage.innerHTML = 'Loading weather data from database...';
+            btn.innerHTML = 'Loading...';
 
             try {
-                const response = await fetch('/get_weather_data_from_db');
-                const result = await response.json();
+                const success = await loadNasaDataFromFile();
+                if (success && nasaData.length > 0) {
+                    timestampDiv.innerHTML = 'Rows: ' + nasaRowCount;
 
-                if (result.success && result.data && result.data.length > 0) {
-                    statusMessage.className = 'alert alert-success';
-                    statusMessage.innerHTML = `<strong>Weather Data Loaded:</strong> ${result.count} records retrieved from database`;
+                    const sortedData = nasaData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    const last10Rows = sortedData.slice(0, 10);
 
-                    // Populate the table
-                    tableBody.innerHTML = result.data.map(row => `
-                        <tr>
-                            <td>${row.timestamp}</td>
-                            <td>${row.temperature.toFixed(2)}</td>
-                            <td>${row.humidity.toFixed(2)}</td>
-                            <td>${row.wind_speed.toFixed(2)}</td>
-                            <td>${row.source}</td>
-                        </tr>
-                    `).join('');
+                    tableBody.innerHTML = last10Rows.map((row, index) => 
+                        '<tr>' +
+                        '<td>' + (row.id || index + 1) + '</td>' +
+                        '<td>' + (row.timestamp || 'N/A') + '</td>' +
+                        '<td>' + (row.temperature ? row.temperature.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.humidity ? row.humidity.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.irradiance ? row.irradiance.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_speed ? row.wind_speed.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_power_density || '') + '</td>' +
+                        '<td>' + (row.solar_energy_yield || '') + '</td>' +
+                        '<td>' + (row.source || 'nasa_power') + '</td>' +
+                        '</tr>'
+                    ).join('');
                 } else {
-                    statusMessage.className = 'alert alert-warning';
-                    statusMessage.innerHTML = `<strong>No Data Found:</strong> ${result.error || 'No weather data available in database'}`;
-                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">No weather data found in database</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">No NASA POWER data found</td></tr>';
                 }
             } catch (error) {
-                statusMessage.className = 'alert alert-danger';
-                statusMessage.innerHTML = `<strong>Error:</strong> ${error.message}`;
-                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">Error loading data from database</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">Error loading NASA data</td></tr>';
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-database"></i> Load Weather Data from Database';
+                btn.innerHTML = 'Latest 10 Rows';
             }
         }
-    </script>
 
-    <!-- Error Logs Section -->
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-12">
-                <h3>Error Logs and Troubleshooting</h3>
-                <p>The following rows display real-time error logs and troubleshooting information:</p>
+        // Load and display top 10 wind speed NASA rows
+        async function loadNasaTopWindSpeed() {
+            const btn = document.getElementById('loadNasaTopWindBtn');
+            const tableBody = document.getElementById('nasaTableBody');
+            const timestampDiv = document.getElementById('nasaTimestamp');
 
-                <div class="error-logs-table">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>Component</th>
-                                <th>Error Type</th>
-                                <th>Message</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="errorLogsTableBody">
-                            <tr>
-                                <td colspan="5" class="text-center text-muted">No errors logged yet. Errors will appear here in real-time.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            btn.disabled = true;
+            btn.innerHTML = 'Loading...';
 
-                <div class="mt-3">
-                    <button id="clearLogsBtn" class="btn btn-warning btn-sm" onclick="clearErrorLogs()">
-                        <i class="fas fa-trash"></i> Clear Error Logs
-                    </button>
-                    <button id="refreshLogsBtn" class="btn btn-info btn-sm ms-2" onclick="refreshErrorLogs()">
-                        <i class="fas fa-sync"></i> Refresh Logs
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+            try {
+                const success = await loadNasaDataFromFile();
+                if (success && nasaData.length > 0) {
+                    timestampDiv.innerHTML = 'Rows: ' + nasaRowCount;
 
-    <script>
-        // Error logging functionality
-        let errorLogs = [];
+                    const sortedData = nasaData.sort((a, b) => b.wind_speed - a.wind_speed);
+                    const top10Rows = sortedData.slice(0, 10);
 
-        function logError(component, errorType, message, status = 'Error') {
-            const timestamp = new Date().toLocaleString();
-            const errorEntry = {
-                timestamp: timestamp,
-                component: component,
-                errorType: errorType,
-                message: message,
-                status: status
-            };
-
-            errorLogs.unshift(errorEntry); // Add to beginning of array
-
-            // Keep only last 100 entries
-            if (errorLogs.length > 100) {
-                errorLogs = errorLogs.slice(0, 100);
+                    tableBody.innerHTML = top10Rows.map((row, index) => 
+                        '<tr>' +
+                        '<td>' + (row.id || index + 1) + '</td>' +
+                        '<td>' + (row.timestamp || 'N/A') + '</td>' +
+                        '<td>' + (row.temperature ? row.temperature.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.humidity ? row.humidity.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.irradiance ? row.irradiance.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_speed ? row.wind_speed.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_power_density || '') + '</td>' +
+                        '<td>' + (row.solar_energy_yield || '') + '</td>' +
+                        '<td>' + (row.source || 'nasa_power') + '</td>' +
+                        '</tr>'
+                    ).join('');
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">No NASA POWER data found</td></tr>';
+                }
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">Error loading NASA data</td></tr>';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Top 10 Wind Speed';
             }
-
-            updateErrorLogsDisplay();
         }
 
-        function updateErrorLogsDisplay() {
-            const tbody = document.getElementById('errorLogsTableBody');
+        // Load and display top 10 irradiance NASA rows
+        async function loadNasaTopIrradiance() {
+            const btn = document.getElementById('loadNasaTopIrradianceBtn');
+            const tableBody = document.getElementById('nasaTableBody');
+            const timestampDiv = document.getElementById('nasaTimestamp');
 
-            if (errorLogs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No errors logged yet. Errors will appear here in real-time.</td></tr>';
-                return;
+            btn.disabled = true;
+            btn.innerHTML = 'Loading...';
+
+            try {
+                const success = await loadNasaDataFromFile();
+                if (success && nasaData.length > 0) {
+                    timestampDiv.innerHTML = 'Rows: ' + nasaRowCount;
+
+                    const sortedData = nasaData.sort((a, b) => b.irradiance - a.irradiance);
+                    const top10Rows = sortedData.slice(0, 10);
+
+                    tableBody.innerHTML = top10Rows.map((row, index) => 
+                        '<tr>' +
+                        '<td>' + (row.id || index + 1) + '</td>' +
+                        '<td>' + (row.timestamp || 'N/A') + '</td>' +
+                        '<td>' + (row.temperature ? row.temperature.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.humidity ? row.humidity.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.irradiance ? row.irradiance.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_speed ? row.wind_speed.toFixed(2) : 'N/A') + '</td>' +
+                        '<td>' + (row.wind_power_density || '') + '</td>' +
+                        '<td>' + (row.solar_energy_yield || '') + '</td>' +
+                        '<td>' + (row.source || 'nasa_power') + '</td>' +
+                        '</tr>'
+                    ).join('');
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">No NASA POWER data found</td></tr>';
+                }
+            } catch (error) {
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #666;">Error loading NASA data</td></tr>';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Top 10 Solar Irradiance';
             }
-
-            tbody.innerHTML = errorLogs.map(log => `
-                <tr class="${log.status === 'Error' ? 'table-danger' : log.status === 'Warning' ? 'table-warning' : 'table-info'}">
-                    <td>${log.timestamp}</td>
-                    <td>${log.component}</td>
-                    <td>${log.errorType}</td>
-                    <td>${log.message}</td>
-                    <td><span class="badge bg-${log.status === 'Error' ? 'danger' : log.status === 'Warning' ? 'warning' : 'info'}">${log.status}</span></td>
-                </tr>
-            `).join('');
         }
-
-        function clearErrorLogs() {
-            errorLogs = [];
-            updateErrorLogsDisplay();
-        }
-
-        function refreshErrorLogs() {
-            updateErrorLogsDisplay();
-        }
-
-        // Auto-load data on page load
-        window.onload = function() {
-            loadNasaPowerData();
-            loadSimData(); // Auto-load sim data on page load
-        };
-
-        // Override existing functions to add error logging
-        const originalTriggerIngestion = window.triggerIngestion;
-        window.triggerIngestion = async function() {
-            try {
-                await originalTriggerIngestion();
-                logError('Data Ingestion', 'Success', 'Data ingestion completed successfully', 'Success');
-            } catch (error) {
-                logError('Data Ingestion', 'Network Error', error.message, 'Error');
-                throw error;
-            }
-        };
-
-        const originalCheckPostgresStatus = window.checkPostgresStatus;
-        window.checkPostgresStatus = async function() {
-            try {
-                await originalCheckPostgresStatus();
-            } catch (error) {
-                logError('PostgreSQL', 'Connection Error', error.message, 'Error');
-                throw error;
-            }
-        };
-
-        const originalVerifyDbConnection = window.verifyDbConnection;
-        window.verifyDbConnection = async function() {
-            try {
-                await originalVerifyDbConnection();
-            } catch (error) {
-                logError('Database', 'Connection Error', error.message, 'Error');
-                throw error;
-            }
-        };
-
-        const originalTestAutomaticIngestion = window.testAutomaticIngestion;
-        window.testAutomaticIngestion = async function() {
-            try {
-                await originalTestAutomaticIngestion();
-            } catch (error) {
-                logError('Automatic Ingestion', 'Test Error', error.message, 'Error');
-                throw error;
-            }
-        };
-
-        const originalStartStreamlit = window.startStreamlit;
-        window.startStreamlit = async function() {
-            try {
-                await originalStartStreamlit();
-            } catch (error) {
-                logError('Streamlit', 'Startup Error', error.message, 'Error');
-                throw error;
-            }
-        };
-
-        const originalViewLogs = window.viewLogs;
-        window.viewLogs = async function() {
-            try {
-                await originalViewLogs();
-            } catch (error) {
-                logError('Log Viewer', 'Load Error', error.message, 'Error');
-                throw error;
-            }
-        };
-
-        const originalFinalDbCheck = window.finalDbCheck;
-        window.finalDbCheck = async function() {
-            try {
-                await originalFinalDbCheck();
-            } catch (error) {
-                logError('Database', 'Final Check Error', error.message, 'Error');
-                throw error;
-            }
-        };
     </script>
 </body>
 </html>

@@ -49,22 +49,23 @@ def count_rows(conn):
         logger.error(f"Error counting rows: {e}")
         return None
 
-def insert_sensor_data(conn, timestamp, temperature, humidity, irradiance, wind_speed, source="unknown"):
+def insert_sensor_data(conn, timestamp, temperature, humidity, irradiance, wind_speed, source="unknown", wind_power_density=None, solar_energy_yield=None):
     """Insert one row into sensor_data table, strip microseconds, skip duplicates."""
     try:
         ts = datetime.fromisoformat(timestamp).replace(microsecond=0)
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed, source)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed, source, wind_power_density, solar_energy_yield)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (timestamp) DO NOTHING;
                 """,
-                (ts, temperature, humidity, irradiance, wind_speed, source)
+                (ts, temperature, humidity, irradiance, wind_speed, source, wind_power_density, solar_energy_yield)
             )
         conn.commit()
     except Exception as e:
         logger.error(f"Insert failed: {e}")
+
 
 def ingest_text_file(conn, filepath="data/sensor_logs.txt", source="sim"):
     """Read plain text log file and insert rows."""
