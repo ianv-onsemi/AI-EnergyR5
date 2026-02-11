@@ -132,10 +132,16 @@ pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" status
 
 #### Step 3: Initialize Database Schema
 
-Run the schema script to create the database and table:
+**Important:** All commands below must be run from your **project directory**, not from the PostgreSQL bin directory.
 
+First, change to your project directory:
 ```bash
-psql -U postgres -f db/schema.sql
+cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5"
+```
+
+Then run the schema script using the full path to psql.exe:
+```bash
+"D:\My Documents\tools\postgresql\pgsql\bin\psql.exe" -U postgres -f db/schema.sql
 ```
 
 **Database Schema (11 columns):**
@@ -156,8 +162,14 @@ psql -U postgres -f db/schema.sql
 
 #### Step 4: Test Database Connection
 
-Run the connection test to verify setup:
+**Important:** Run this from your project directory, not from the PostgreSQL bin directory.
 
+Change to your project directory:
+```bash
+cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5"
+```
+
+Then run the connection test:
 ```bash
 python db/test_connection.py
 ```
@@ -187,7 +199,7 @@ pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" stop
 | Stop server | `pg_ctl.exe -D "path\to\data" stop` |
 | Check status | `pg_ctl.exe -D "path\to\data" status` |
 | Test connection | `python db/test_connection.py` |
-| View schema | `psql -U postgres -d energy_db -c "\d sensor_data"` |
+| View schema | `"D:\My Documents\tools\postgresql\pgsql\bin\psql.exe" -U postgres -d energy_db -c "\d sensor_data"` |
 
 #### Troubleshooting
 
@@ -195,6 +207,8 @@ pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" stop
 - **Database does not exist**: Run `db/schema.sql` to initialize
 - **Permission denied**: Check PostgreSQL user privileges
 - **Port already in use**: Ensure no other PostgreSQL instance is running on port 5432
+- **"psql not recognized"**: Use the full path to `psql.exe` as shown in the commands above
+- **"can't open file"**: Make sure you're running Python commands from the project directory, not from PostgreSQL bin directory
 
 > For detailed development notes, refer to `docs/myNotes.txt`
 
@@ -227,7 +241,8 @@ Before starting, make sure you have:
    - If not running, start it: `pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" -l logfile start`
 
 2. **Verify database connection**:
-   - In your project folder, run: `python db/test_connection.py`
+   - Change to your project directory: `cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5"`
+   - Run: `python db/test_connection.py`
    - You should see existing sensor data in a table format
 
 ##### Step 2: Test Manual Data Collection
@@ -264,22 +279,45 @@ Manual collection lets you trigger data ingestion instantly via a web API call.
      - "Data collection completed. Rows added: 20"
 
 6. **Verify data was saved to database**:
-   ```bash
-   python ..\db\test_connection.py
-   ```
+   - Change to project directory: `cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5"`
+   - Run: `python db/test_connection.py`
    - You should see new rows added to your sensor data table
    - Look for recent timestamps in the data
+
+**If no new data appears**, follow these troubleshooting steps:
+
+1. **Stop the current Flask server** (Ctrl+C in the first Command Prompt window)
+2. **Restart the Flask server**:
+   ```bash
+   cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5\web"
+   python ingestion_trigger.py
+   ```
+3. **Run the curl command again**:
+   ```bash
+   curl -X POST http://localhost:5000/trigger_ingestion
+   ```
+4. **Check if data was saved**:
+   ```bash
+   cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5"
+   python db/test_connection.py
+   ```
+
 
 ##### Step 3: Test Automatic Data Collection (Optional)
 
 Automatic collection runs daily after 8 PM, but you can test the function directly.
 
-1. **In a Python session or new Command Prompt**, run:
+1. **In a Python session or new Command Prompt**, change to project directory:
+   ```bash
+   cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5"
+   ```
+
+2. **Run the test**:
    ```bash
    python -c "from web.ingestion_trigger import perform_continuous_ingestion; result = perform_continuous_ingestion(); print('Result:', result)"
    ```
 
-2. **What you'll see**:
+3. **What you'll see**:
    - **Before 8 PM**: `{'success': True, 'message': 'Not yet 8 PM - skipping scheduled ingestion', 'total_rows': 0}`
    - **After 8 PM**: The system will collect historical data and show rows added
 
@@ -310,9 +348,8 @@ Now that you've collected data, let's see it in the web dashboard!
 
 
 4. **Alternative: View HTML Table**:
-   ```bash
-   python generate_html_table.py
-   ```
+   - Change to project directory: `cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5"`
+   - Run: `python web/generate_html_table.py`
    - This creates an HTML file you can open in any browser
    - Shows the same data in a formatted table
 
@@ -326,9 +363,8 @@ Now that you've collected data, let's see it in the web dashboard!
      - Any error messages (if something went wrong)
 
 2. **Final database check**:
-   ```bash
-   python db/test_connection.py
-   ```
+   - Change to project directory: `cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5"`
+   - Run: `python db/test_connection.py`
    - Confirm all your new data is there
    - Count should be higher than before you started
 
@@ -453,10 +489,11 @@ If something doesn't work:
 
 ```bash
 # Check PostgreSQL status
+cd "D:\My Documents\tools\postgresql\pgsql\bin"
 pg_ctl.exe -D "D:\My Documents\tools\postgresql\pgsql\data" status
 
 # Start web server for data collection
-cd web
+cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5\web"
 python ingestion_trigger.py
 
 # Trigger manual data collection
@@ -466,10 +503,12 @@ curl -X POST http://localhost:5000/trigger_ingestion
 # Navigate to http://localhost:5000 after starting the Flask server
 
 
-# Check database contents
+# Check database contents (from project directory)
+cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5"
 python db/test_connection.py
 
-# Test automatic collection
+# Test automatic collection (from project directory)
+cd "d:\My Documents\ee\1_Tester_cee\AI\AI-EnergyR5"
 python -c "from web.ingestion_trigger import perform_continuous_ingestion; print(perform_continuous_ingestion())"
 ```
 

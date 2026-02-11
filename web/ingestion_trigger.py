@@ -23,9 +23,9 @@ from db.db_connector import get_connection
 
 app = Flask(__name__)
 
-# Setup logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-logger = logging.getLogger(__name__)
+# Import logger from db_ingest to avoid duplicate handlers
+from db.db_ingest import logger
+
 
 # Global variables for continuous ingestion
 continuous_ingestion_active = False
