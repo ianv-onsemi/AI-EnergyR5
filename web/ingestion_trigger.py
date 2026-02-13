@@ -56,6 +56,77 @@ def get_last_timestamp():
         logger.error(f"Failed to get last timestamp: {e}")
         return None
 
+def get_last_timestamp_by_source(source):
+    """Get the latest timestamp for a specific data source from the database"""
+    try:
+        conn = get_connection()
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT MAX(timestamp) FROM sensor_data WHERE source = %s;",
+                (source,)
+            )
+            result = cur.fetchone()
+            conn.close()
+            return result[0] if result and result[0] else None
+    except Exception as e:
+        logger.error(f"Failed to get last timestamp for source {source}: {e}")
+        return None
+
+def calculate_date_range(last_timestamp):
+    """Calculate the date range from last timestamp to today"""
+    if not last_timestamp:
+        # If no data exists, start from yesterday
+        start_date = datetime.now().date() - timedelta(days=1)
+    else:
+        # Start from the day after the last timestamp
+        start_date = last_timestamp.date() + timedelta(days=1)
+    
+    end_date = datetime.now().date()
+    
+    # If start_date is in the future (database is up to date), return None
+    if start_date > end_date:
+        return None, None
+    
+    return start_date, end_date
+
+def generate_timestamps_for_date_range(start_date, end_date, num_points=10):
+    """Generate evenly distributed timestamps across the date range"""
+    if not start_date or not end_date:
+        return []
+    
+    # Calculate total days in range
+    total_days = (end_date - start_date).days + 1
+    
+    # If range is just today, distribute throughout the day
+    if total_days == 1:
+        timestamps = []
+        base_date = datetime.combine(start_date, datetime.min.time())
+        # Distribute 10 points from 00:00 to 23:59
+        for i in range(num_points):
+            hour = int((i / (num_points - 1)) * 23) if num_points > 1 else 12
+            minute = int(((i % 2) * 30))  # Alternate between :00 and :30
+            timestamp = base_date.replace(hour=hour, minute=minute)
+            timestamps.append(timestamp)
+        return timestamps
+    
+    # For multiple days, distribute points across days
+    timestamps = []
+    for i in range(num_points):
+        # Calculate which day this point belongs to
+        day_index = int((i / num_points) * total_days)
+        target_date = start_date + timedelta(days=min(day_index, total_days - 1))
+        
+        # Distribute time throughout the day
+        hour = int(((i % 3) + 1) * 6)  # 6, 12, 18 hours
+        minute = (i * 10) % 60  # Spread minutes
+        
+        timestamp = datetime.combine(target_date, datetime.min.time())
+        timestamp = timestamp.replace(hour=hour, minute=minute)
+        timestamps.append(timestamp)
+    
+    return timestamps
+
+
 def fetch_historical_weather_data(start_date, end_date):
     """Fetch historical weather data from OpenWeather API for a date range"""
     weather_data_list = []
@@ -930,7 +1001,8 @@ def trigger_ingestion():
             'solar_fetched': False,
             'solar_rows_inserted': 0,
             'ingestion_result': {},
-            'error': None
+            'error': None,
+            'date_range': None
         }
 
         # Step 1: Generate simulated sensor data
@@ -944,14 +1016,36 @@ def trigger_ingestion():
             response_data['error'] = f"Sensor generation failed: {str(e)}"
             return jsonify(response_data), 500
 
-        # Step 2: Fetch weather data from OpenWeather API (10 rows)
-        logger.info("Step 2: Fetching weather data from OpenWeather API")
+        # Step 2: Determine date range for OpenWeather data
+        logger.info("Step 2: Determining date range for OpenWeather data")
+        last_weather_date = get_last_timestamp_by_source('openweather')
+        weather_start_date, weather_end_date = calculate_date_range(last_weather_date)
+        
+        if weather_start_date and weather_end_date:
+            logger.info(f"Fetching OpenWeather data from {weather_start_date} to {weather_end_date}")
+            response_data['date_range'] = f"{weather_start_date} to {weather_end_date}"
+        else:
+            logger.info("OpenWeather database is up to date, fetching current data only")
+            weather_start_date = datetime.now().date()
+            weather_end_date = weather_start_date
+        
+        # Step 3: Fetch weather data from OpenWeather API (10 rows distributed across date range)
+        logger.info("Step 3: Fetching weather data from OpenWeather API")
         weather_data_list = []
         try:
+            # Generate timestamps across the date range
+            weather_timestamps = generate_timestamps_for_date_range(weather_start_date, weather_end_date, 10)
+            
             for i in range(10):
                 logger.info(f"Fetching weather data point {i+1}/10")
                 weather_data = get_weather_data()
                 if weather_data:
+                    # Adjust timestamp to distribute across date range
+                    if i < len(weather_timestamps):
+                        adjusted_timestamp = weather_timestamps[i].strftime("%Y-%m-%d %H:%M:%S")
+                        weather_data['timestamp'] = adjusted_timestamp
+                        logger.info(f"Weather data {i+1} assigned timestamp: {adjusted_timestamp}")
+                    
                     weather_data_list.append(weather_data)
                     logger.info(f"Weather data {i+1} fetched successfully: wind_power_density={weather_data.get('wind_power_density')}, solar_energy_yield={weather_data.get('solar_energy_yield')}")
                 else:
@@ -968,15 +1062,38 @@ def trigger_ingestion():
             response_data['error'] = f"Weather fetch failed: {str(e)}"
             return jsonify(response_data), 500
 
-
-        # Step 3: Fetch solar irradiance data from NASA POWER API (10 rows)
-        logger.info("Step 3: Fetching solar irradiance data from NASA POWER API")
+        # Step 4: Determine date range for NASA POWER data
+        logger.info("Step 4: Determining date range for NASA POWER data")
+        last_solar_date = get_last_timestamp_by_source('nasa_power')
+        solar_start_date, solar_end_date = calculate_date_range(last_solar_date)
+        
+        if solar_start_date and solar_end_date:
+            logger.info(f"Fetching NASA POWER data from {solar_start_date} to {solar_end_date}")
+            if not response_data['date_range']:
+                response_data['date_range'] = f"{solar_start_date} to {solar_end_date}"
+        else:
+            logger.info("NASA POWER database is up to date, fetching current data only")
+            solar_start_date = datetime.now().date()
+            solar_end_date = solar_start_date
+        
+        # Step 5: Fetch solar irradiance data from NASA POWER API (10 rows distributed across date range)
+        logger.info("Step 5: Fetching solar irradiance data from NASA POWER API")
         solar_data_list = []
         try:
+            # Generate timestamps across the date range
+            solar_timestamps = generate_timestamps_for_date_range(solar_start_date, solar_end_date, 10)
+            
             for i in range(10):
                 logger.info(f"Fetching solar irradiance data point {i+1}/10")
                 solar_data = get_solar_irradiance_data()
                 if solar_data:
+                    # Adjust timestamp to distribute across date range
+                    if i < len(solar_timestamps):
+                        adjusted_timestamp = solar_timestamps[i].strftime("%Y-%m-%d %H:%M:%S")
+                        # solar_data is a tuple (timestamp, irradiance)
+                        solar_data = (adjusted_timestamp, solar_data[1])
+                        logger.info(f"Solar data {i+1} assigned timestamp: {adjusted_timestamp}")
+                    
                     solar_data_list.append(solar_data)
                     logger.info(f"Solar irradiance data {i+1} fetched successfully")
                 else:
@@ -993,8 +1110,9 @@ def trigger_ingestion():
             response_data['error'] = f"Solar fetch failed: {str(e)}"
             return jsonify(response_data), 500
 
-        # Step 4: Run database ingestion
-        logger.info("Step 4: Running database ingestion")
+
+        # Step 6: Run database ingestion
+        logger.info("Step 6: Running database ingestion")
         try:
             ingestion_result = run_ingestion()
             response_data['ingestion_result'] = ingestion_result or {}
@@ -1004,8 +1122,9 @@ def trigger_ingestion():
             response_data['error'] = f"Database ingestion failed: {str(e)}"
             return jsonify(response_data), 500
 
-        # Step 5: Insert weather data if fetched
-        logger.info("Step 5: Inserting weather data into database")
+        # Step 7: Insert weather data if fetched
+        logger.info("Step 7: Inserting weather data into database")
+
         if response_data['weather_fetched'] and weather_data_list:
             try:
                 conn = get_connection()
@@ -1034,8 +1153,9 @@ def trigger_ingestion():
                 return jsonify(response_data), 500
 
 
-        # Step 6: Insert solar data if fetched
-        logger.info("Step 6: Inserting solar irradiance data into database")
+        # Step 8: Insert solar data if fetched
+        logger.info("Step 8: Inserting solar irradiance data into database")
+
         if response_data['solar_fetched'] and solar_data_list:
             try:
                 conn = get_connection()
