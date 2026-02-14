@@ -697,3 +697,63 @@ Phase 11: Web-Sensor Data Integration,Combine local sensor + web API data for ri
 [z] Summary of changes today: Organized data files by source groups, enhanced HTML dashboard with latest data display and row numbering, fixed API endpoints for proper data loading.
 ================================================
 
+..notes 2026-02-13;
+# TODO: Adjust Fetch Function to Get Data from Last Date to Today
+
+## Tasks:
+- [x] Check latest dates in database (OpenWeather: 2026-02-06, NASA POWER: 2026-02-06)
+- [x] Add `get_last_timestamp_by_source(source)` function to `web/ingestion_trigger.py`
+- [x] Modify `trigger_ingestion` endpoint to calculate date range from last date to today
+- [x] Update fetch logic to distribute 10 data points across missing dates
+- [x] Add date parameter support to API calls
+- [x] Test the updated fetch function
+- [x] Verify data fills gaps from last date to today
+
+## Implementation Details:
+1. ✅ Create helper function to get latest timestamp for each source
+2. ✅ Calculate days between last date and today
+3. ✅ Distribute 10 fetches evenly across missing days
+4. ✅ Adjust timestamps to cover the date range
+5. ✅ Ensure no duplicate timestamps are inserted
+
+## Changes Made:
+- Added `get_last_timestamp_by_source(source)` function to query database for latest timestamp per source
+- Added `calculate_date_range(last_timestamp)` to determine date range from last date to today
+- Added `generate_timestamps_for_date_range(start_date, end_date, num_points)` to distribute timestamps evenly
+- Modified `trigger_ingestion` endpoint to:
+  - Check latest dates for OpenWeather and NASA POWER separately
+  - Calculate missing date range for each source
+  - Distribute 10 data points across the date range with adjusted timestamps
+  - Include date_range in response data
+
+## Test Results:
+- ✅ `calculate_date_range()` correctly identifies missing date ranges
+- ✅ `generate_timestamps_for_date_range()` distributes 10 timestamps across single and multi-day ranges
+- ✅ Database queries successfully retrieve latest timestamps by source
+- ✅ Detected 7 days of missing data (2026-02-07 to 2026-02-13) for both OpenWeather and NASA POWER
+
+## Current Status:
+The fetch function now:
+1. Queries the database for the latest timestamp for each source (OpenWeather and NASA POWER)
+2. Calculates the date range from the last recorded date to today
+3. Generates 10 evenly distributed timestamps across that date range
+4. Fetches data from APIs and assigns the distributed timestamps
+5. Inserts data into the database with proper source labels
+
+**Ready for production use** - The next manual trigger will fetch data from 2026-02-07 to 2026-02-13 (7 days) and distribute 10 data points across that range.
+
+## Extended Implementation: Complete Hourly Coverage
+- [x] Fixed database constraint from `UNIQUE (timestamp)` to `UNIQUE (timestamp, source)`
+- [x] NASA POWER backfill: Inserted 1,036 records (Jan 1 - Feb 13, 2026)
+- [x] OpenWeather gap filling: Filled 10 missing hours
+- [x] Achieved 100% hourly coverage (24 data points per day) for both sources
+- [x] Total records: OpenWeather: 1,111, NASA POWER: 1,063
+
+## Files Created:
+- `fix_unique_constraint.py` - Fixed database unique constraint
+- `direct_nasa_backfill.py` - NASA POWER hourly backfill script
+- `fill_openweather_gaps.py` - OpenWeather gap filling script
+- `verify_hourly_coverage.py` - Coverage verification tool
+
+[z] Summary of changes today: Fixed database constraint to allow multiple sources per timestamp, completed NASA POWER backfill with 1,036 records, filled OpenWeather gaps achieving 100% hourly coverage from Jan 1 to Feb 13, 2026.
+================================================

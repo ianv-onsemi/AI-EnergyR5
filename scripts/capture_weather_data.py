@@ -56,19 +56,20 @@ def insert_weather_data(conn, weather_data, source=None, wind_power_density=None
                     """
                     INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed, source, wind_power_density, solar_energy_yield)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (timestamp) DO NOTHING;
+                    ON CONFLICT (timestamp, source) DO NOTHING;
                     """,
                     (timestamp, temperature, humidity, irradiance, wind_speed, source, wind_power_density, solar_energy_yield)
                 )
             else:
                 cur.execute(
                     """
-                    INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed, wind_power_density, solar_energy_yield)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (timestamp) DO NOTHING;
+                    INSERT INTO sensor_data (timestamp, temperature, humidity, irradiance, wind_speed, source, wind_power_density, solar_energy_yield)
+                    VALUES (%s, %s, %s, %s, %s, 'openweather', %s, %s)
+                    ON CONFLICT (timestamp, source) DO NOTHING;
                     """,
                     (timestamp, temperature, humidity, irradiance, wind_speed, wind_power_density, solar_energy_yield)
                 )
+
         conn.commit()
         logger.info("Weather data inserted successfully.")
     except Exception as e:
